@@ -1,7 +1,11 @@
+import 'dart:async';
 import 'dart:developer';
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 import 'package:instructor_beats_admin/core/deferred_snackbar.dart';
+import 'package:instructor_beats_admin/core/initial_session.dart';
 import 'package:instructor_beats_admin/data/admin_data_controller.dart';
 import 'package:instructor_beats_admin/features/categories/controllers/categories_controller.dart';
 import 'package:instructor_beats_admin/features/dashboard/controllers/dashboard_controller.dart';
@@ -18,6 +22,88 @@ class AuthController extends GetxController {
 
   final RxBool isLoggedIn = false.obs;
   final RxBool isBusy = false.obs;
+
+  StreamSubscription<User?>? _authSubscription;
+
+  @override
+  void onInit() {
+    super.onInit();
+    if (InitialSession.startAsAdminSession) {
+      isLoggedIn.value = true;
+      unawaited(_hydrateAdminData());
+    }
+    _authSubscription = _authService.authStateChanges.listen((user) {
+      unawaited(_onAuthStateChanged(user));
+    });
+  }
+
+  @override
+  void onClose() {
+    unawaited(_authSubscription?.cancel());
+    super.onClose();
+  }
+
+  /// Keeps [isLoggedIn] and routing aligned with Firebase’s persisted session
+  /// (refresh, app restart, new tab on web).
+  Future<void> _onAuthStateChanged(User? user) async {
+    if (user == null) {
+      isLoggedIn.value = false;
+      if (Get.currentRoute == AppRoutes.admin) {
+        _disposeShellControllers();
+        _safeOffAllNamed(AppRoutes.login);
+      }
+      return;
+    }
+
+    final email = user.email;
+    if (email == null) return;
+
+    try {
+      final ok = await _authService.isAdminEmail(email);
+      if (!ok) {
+        await _authService.signOut();
+        return;
+      }
+    } catch (e, st) {
+      log('Admin check failed during auth sync', error: e, stackTrace: st);
+      return;
+    }
+
+    isLoggedIn.value = true;
+
+    if (Get.currentRoute != AppRoutes.login) {
+      return;
+    }
+
+    try {
+      await _hydrateAdminData();
+    } catch (e, st) {
+      log('Hydrate after auth restore failed', error: e, stackTrace: st);
+    }
+
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (Get.currentRoute != AppRoutes.login) return;
+      _safeOffAllNamed(AppRoutes.admin);
+    });
+  }
+
+  void _safeOffAllNamed(String route) {
+    try {
+      Get.offAllNamed(route);
+    } catch (e, st) {
+      log('Navigation to $route skipped', error: e, stackTrace: st);
+    }
+  }
+
+  Future<void> _hydrateAdminData() async {
+    final data = Get.find<AdminDataController>();
+    await Future.wait<void>([
+      data.refreshCategoriesFromFirebase(),
+      data.refreshSongsFromFirebase(),
+      data.refreshUsersFromFirebase(),
+      data.refreshActivityFromFirebase(),
+    ]);
+  }
 
   Future<void> login({required String email, required String password}) async {
     isBusy.value = true;
@@ -50,12 +136,8 @@ class AuthController extends GetxController {
       }
 
       isLoggedIn.value = true;
-      final data = Get.find<AdminDataController>();
-      await data.refreshCategoriesFromFirebase();
-      await data.refreshSongsFromFirebase();
-      await data.refreshUsersFromFirebase();
-      await data.refreshActivityFromFirebase();
-      Get.offAllNamed(AppRoutes.admin);
+      await _hydrateAdminData();
+      _safeOffAllNamed(AppRoutes.admin);
     } on AuthException catch (e) {
       final detail = e.message.trim();
       showAppSnackbar(
@@ -76,14 +158,13 @@ class AuthController extends GetxController {
   }
 
   Future<void> logout() async {
-    isLoggedIn.value = false;
     try {
       await _authService.signOut();
     } catch (_) {
-      // Even if sign-out fails remotely, clear local shell state.
+      isLoggedIn.value = false;
+      _disposeShellControllers();
+      _safeOffAllNamed(AppRoutes.login);
     }
-    _disposeShellControllers();
-    Get.offAllNamed(AppRoutes.login);
   }
 
   void _disposeShellControllers() {

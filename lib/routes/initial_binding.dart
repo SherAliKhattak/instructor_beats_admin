@@ -23,6 +23,6 @@ class InitialBinding extends Bindings {
     Get.put(ConsumerUserAuthService(), permanent: true);
     Get.put(AdminDataController(), permanent: true);
     Get.put(AuthService(), permanent: true);
-    Get.put(AuthController(), permanent: true);
+    Get.put(AuthController(), permanent: true); // auth stream must survive route changes
   }
 }

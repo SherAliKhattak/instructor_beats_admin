@@ -82,6 +82,7 @@ class SongsView extends GetView<SongsController> {
                         decoration: _songsFilterDecoration(
                           context,
                           labelText: 'Category',
+                          prefixIcon: Icons.category_outlined,
                         ),
                         items: [
                           const DropdownMenuItem<String?>(
@@ -162,9 +163,10 @@ class SongsView extends GetView<SongsController> {
                     () => DropdownButtonFormField<String?>(
                       // ignore: deprecated_member_use
                       value: controller.categoryFilterId.value,
-                      decoration: const InputDecoration(
+                      decoration: _songsFilterDecoration(
+                        context,
                         labelText: 'Category',
-                        isDense: true,
+                        prefixIcon: Icons.category_outlined,
                       ),
                       items: [
                         const DropdownMenuItem<String?>(
@@ -460,14 +462,24 @@ InputDecoration _songsFilterDecoration(
   BuildContext context, {
   String? labelText,
   String? hintText,
+  IconData? prefixIcon,
 }) {
+  final scheme = Theme.of(context).colorScheme;
+  final iconColor = scheme.onSurfaceVariant;
+  Widget? leading;
+  if (prefixIcon != null) {
+    leading = Icon(prefixIcon, size: 22, color: iconColor);
+  } else if (hintText != null) {
+    leading = Icon(Icons.search, size: 22, color: iconColor);
+  }
+
   return InputDecoration(
     labelText: labelText,
     hintText: hintText,
     isDense: true,
     filled: true,
     fillColor: AppColors.fieldFill,
-    prefixIcon: hintText != null ? const Icon(Icons.search) : null,
+    prefixIcon: leading,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(999),
       borderSide: const BorderSide(color: AppColors.fieldBorder),

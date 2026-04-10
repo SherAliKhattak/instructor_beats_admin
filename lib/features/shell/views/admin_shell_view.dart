@@ -280,15 +280,32 @@ class _SidebarNav extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(18, 0, 18, 14),
-          child: Text(
-            expanded ? 'ADMIN PANEL' : '',
-            style: TextStyle(
-              letterSpacing: 0.6,
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: DashColors.textMuted.withValues(alpha: 0.85),
-            ),
-          ),
+          child: expanded
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Instructor Beats',
+                      style: TextStyle(
+                        letterSpacing: 0.2,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: DashColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Admin panel',
+                      style: TextStyle(
+                        letterSpacing: 0.5,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: DashColors.textMuted.withValues(alpha: 0.9),
+                      ),
+                    ),
+                  ],
+                )
+              : const SizedBox.shrink(),
         ),
         Expanded(
           child: ListView(

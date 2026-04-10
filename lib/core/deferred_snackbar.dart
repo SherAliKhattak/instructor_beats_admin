@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
@@ -8,14 +9,20 @@ void showAppSnackbar(String title, String message) {
   final m = message.trim().isEmpty
       ? 'You’re all set. If something looks wrong, try the action again.'
       : message.trim();
-  Get.snackbar(
-    t,
-    m,
-    snackPosition: SnackPosition.BOTTOM,
-    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-    borderRadius: 10,
-    duration: const Duration(seconds: 4),
-  );
+  try {
+    Get.snackbar(
+      t,
+      m,
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      borderRadius: 10,
+      duration: const Duration(seconds: 4),
+    );
+  } catch (e, st) {
+    if (kDebugMode) {
+      debugPrint('showAppSnackbar skipped (no overlay / hot reload): $e\n$st');
+    }
+  }
 }
 
 /// Shows [showAppSnackbar] after the current frame (after dialogs/sheets close).

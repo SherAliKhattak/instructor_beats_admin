@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:instructor_beats_admin/core/initial_session.dart';
 import 'package:instructor_beats_admin/routes/app_pages.dart';
 import 'package:instructor_beats_admin/routes/app_routes.dart';
 import 'package:instructor_beats_admin/routes/initial_binding.dart';
@@ -15,20 +16,27 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const InstructorBeatsAdminApp());
+  await InitialSession.resolve();
+  runApp(InstructorBeatsAdminApp(
+    initialRoute: InitialSession.startAsAdminSession
+        ? AppRoutes.admin
+        : AppRoutes.login,
+  ));
 }
 
 class InstructorBeatsAdminApp extends StatelessWidget {
-  const InstructorBeatsAdminApp({super.key});
+  const InstructorBeatsAdminApp({super.key, required this.initialRoute});
+
+  final String initialRoute;
 
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Instructor Beats Admin',
+      title: 'Instructor Beats · Admin',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       initialBinding: InitialBinding(),
-      initialRoute: AppRoutes.login,
+      initialRoute: initialRoute,
       getPages: AppPages.pages,
     );
   }
