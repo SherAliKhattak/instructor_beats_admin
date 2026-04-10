@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "848097395615",
+    "project_id": "instructor-beats-13db1",
+    "storage_bucket": "instructor-beats-13db1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:848097395615:android:af9c513f4e8e9c7e1433aa",
+        "android_client_info": {
+          "package_name": "com.example.instructor_beats_admin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHWKltT5Ve6bHs-I2NrvTIoh5Pe1o45Ow"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:848097395615:android:d963fd33c43e36f31433aa",
+        "android_client_info": {
+          "package_name": "com.instructor.beats"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHWKltT5Ve6bHs-I2NrvTIoh5Pe1o45Ow"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
