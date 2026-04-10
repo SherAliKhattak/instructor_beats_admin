@@ -66,7 +66,10 @@ class SubscriptionsController extends GetxController {
       'Stopped billing for ${sub.userLabel} on the ${sub.plan} plan.',
       kind: 'subscription_canceled',
     );
-    deferredSnackbar('Subscription canceled successfully.', '');
+    deferredSnackbar(
+      'Subscription canceled',
+      'This member’s plan is marked canceled in your list.',
+    );
   }
 
   Future<void> resume(SubscriptionModel sub) async {
@@ -79,6 +82,9 @@ class SubscriptionsController extends GetxController {
       '${sub.userLabel}’s ${sub.plan} plan is active again.',
       kind: 'subscription_resumed',
     );
-    deferredSnackbar('Subscription resumed successfully.', '');
+    deferredSnackbar(
+      'Subscription active again',
+      'This member’s plan is marked active in your list.',
+    );
   }
 }

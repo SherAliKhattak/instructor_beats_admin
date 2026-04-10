@@ -9,6 +9,7 @@ import 'package:instructor_beats_admin/features/shell/shell_section.dart';
 import 'package:instructor_beats_admin/features/songs/views/songs_view.dart';
 import 'package:instructor_beats_admin/features/subscriptions/views/subscriptions_view.dart';
 import 'package:instructor_beats_admin/features/users/views/users_view.dart';
+import 'package:instructor_beats_admin/core/deferred_snackbar.dart';
 import 'package:instructor_beats_admin/theme/app_colors.dart';
 import 'package:instructor_beats_admin/theme/app_theme.dart';
 
@@ -197,10 +198,9 @@ class _TopBar extends StatelessWidget {
               tooltip: 'Notifications',
               onPressed: () {
                 Get.closeAllSnackbars();
-                Get.snackbar(
-                  'Notifications',
-                  'You’re all caught up — nothing new right now.',
-                  snackPosition: SnackPosition.BOTTOM,
+                showAppSnackbar(
+                  'You’re up to date',
+                  'There are no new notifications for you right now.',
                 );
               },
               icon: const Icon(Icons.notifications_outlined, color: DashColors.textMuted),
@@ -209,10 +209,9 @@ class _TopBar extends StatelessWidget {
               tooltip: 'Settings',
               onPressed: () {
                 Get.closeAllSnackbars();
-                Get.snackbar(
-                  'Settings',
-                  'Settings aren’t available in this version yet.',
-                  snackPosition: SnackPosition.BOTTOM,
+                showAppSnackbar(
+                  'Settings unavailable',
+                  'That screen isn’t part of this release yet. Check back in a future update.',
                 );
               },
               icon: const Icon(Icons.settings_outlined, color: DashColors.textMuted),

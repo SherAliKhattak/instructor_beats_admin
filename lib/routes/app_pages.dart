@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:instructor_beats_admin/core/middleware/auth_middleware.dart';
-import 'package:instructor_beats_admin/features/auth/views/forgot_password_view.dart';
 import 'package:instructor_beats_admin/features/auth/views/login_view.dart';
 import 'package:instructor_beats_admin/features/shell/bindings/shell_binding.dart';
 import 'package:instructor_beats_admin/features/shell/views/admin_shell_view.dart';
@@ -11,10 +10,6 @@ abstract final class AppPages {
     GetPage<void>(
       name: AppRoutes.login,
       page: LoginView.new,
-    ),
-    GetPage<void>(
-      name: AppRoutes.forgotPassword,
-      page: ForgotPasswordView.new,
     ),
     GetPage<void>(
       name: AppRoutes.admin,

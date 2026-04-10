@@ -93,10 +93,10 @@ Future<void> showPlaylistFormDialog(
                   kind: existing == null ? 'playlist_added' : 'playlist_updated',
                 );
                 deferredSnackbar(
+                  existing == null ? 'Playlist saved' : 'Changes saved',
                   existing == null
-                      ? 'Playlist added successfully.'
-                      : 'Playlist updated successfully.',
-                  '',
+                      ? '“$name” is in your playlist list.'
+                      : 'Updates to “$name” are saved.',
                 );
                 if (dialogCtx.mounted) close();
               }

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
 import 'package:instructor_beats_admin/core/admin_ui_constants.dart';
-import 'package:instructor_beats_admin/core/deferred_snackbar.dart';
+import 'package:instructor_beats_admin/core/deferred_snackbar.dart'
+    show deferredSnackbar, showAppSnackbar;
 import 'package:instructor_beats_admin/core/widgets/app_text_field.dart';
 import 'package:instructor_beats_admin/data/admin_data_controller.dart';
 import 'package:instructor_beats_admin/models/song_model.dart';
@@ -17,7 +18,7 @@ Future<void> showSongFormSheet(
   final h = AdminUi.controlHeight;
   final data = Get.find<AdminDataController>();
   if (data.categories.isEmpty) {
-    Get.snackbar(
+    showAppSnackbar(
       'Add a category first',
       'Create at least one category, then you can add songs to it.',
     );
@@ -150,7 +151,7 @@ Future<void> showSongFormSheet(
                 final artist = artistC.text.trim();
                 if (title.isEmpty || artist.isEmpty) {
                   setState(() => saving = false);
-                  Get.snackbar(
+                  showAppSnackbar(
                     'Title and artist needed',
                     'Please fill in both the song title and artist name.',
                   );
@@ -160,7 +161,7 @@ Future<void> showSongFormSheet(
                 final bpmValue = int.tryParse(bpmC.text.trim());
                 if (bpmValue == null || bpmValue <= 0) {
                   setState(() => saving = false);
-                  Get.snackbar(
+                  showAppSnackbar(
                     'Check the tempo (BPM)',
                     'Enter beats per minute as a positive number (e.g. 120).',
                   );
@@ -170,7 +171,7 @@ Future<void> showSongFormSheet(
                 final rawDuration = durationC.text.trim();
                 if (rawDuration.isEmpty) {
                   setState(() => saving = false);
-                  Get.snackbar(
+                  showAppSnackbar(
                     'Duration needed',
                     'Enter how long the track is (for example 3:30).',
                   );
@@ -189,7 +190,7 @@ Future<void> showSongFormSheet(
                     );
                   } catch (_) {
                     setState(() => saving = false);
-                    Get.snackbar(
+                    showAppSnackbar(
                       'Cover image didn’t upload',
                       'Check your connection and try again, or paste an image link instead.',
                     );
@@ -206,7 +207,7 @@ Future<void> showSongFormSheet(
                     );
                   } catch (_) {
                     setState(() => saving = false);
-                    Get.snackbar(
+                    showAppSnackbar(
                       'Audio didn’t upload',
                       'Check your connection and try again, or paste an audio link instead.',
                     );
@@ -216,7 +217,7 @@ Future<void> showSongFormSheet(
 
                 if (imageUrl.isEmpty || audioUrl.isEmpty) {
                   setState(() => saving = false);
-                  Get.snackbar(
+                  showAppSnackbar(
                     'Cover and audio needed',
                     'Upload both files or paste a link for the cover image and the audio.',
                   );
@@ -253,13 +254,13 @@ Future<void> showSongFormSheet(
                   if (!context.mounted) return;
                   Navigator.pop(ctx);
                   deferredSnackbar(
+                    existing == null ? 'Song saved' : 'Song updated',
                     existing == null
-                        ? 'Song added successfully.'
-                        : 'Song updated successfully.',
-                    '',
+                        ? '“$title” by $artist is now under $catLabel.'
+                        : 'Your edits to “$title” are saved in the catalog.',
                   );
                 } catch (_) {
-                  Get.snackbar(
+                  showAppSnackbar(
                     'Couldn’t save song',
                     'Check your connection and try again. If the problem continues, contact support.',
                   );
@@ -421,7 +422,7 @@ Future<void> showSongFormSheet(
                                 );
                               } catch (e) {
                                 final msg = e.toString();
-                                Get.snackbar(
+                                showAppSnackbar(
                                   msg.contains('LateInitializationError')
                                       ? 'Can’t open file picker here'
                                       : 'Couldn’t open file picker',
@@ -436,7 +437,7 @@ Future<void> showSongFormSheet(
                               }
                               final file = result.files.first;
                               if (file.bytes == null) {
-                                Get.snackbar(
+                                showAppSnackbar(
                                   'Can’t use this image',
                                   'Try another file or paste an image link instead.',
                                 );
@@ -486,7 +487,7 @@ Future<void> showSongFormSheet(
                                 );
                               } catch (e) {
                                 final msg = e.toString();
-                                Get.snackbar(
+                                showAppSnackbar(
                                   msg.contains('LateInitializationError')
                                       ? 'Can’t open file picker here'
                                       : 'Couldn’t open file picker',
@@ -501,7 +502,7 @@ Future<void> showSongFormSheet(
                               }
                               final file = result.files.first;
                               if (file.bytes == null) {
-                                Get.snackbar(
+                                showAppSnackbar(
                                   'Can’t use this audio file',
                                   'Try another file or paste an audio link instead.',
                                 );

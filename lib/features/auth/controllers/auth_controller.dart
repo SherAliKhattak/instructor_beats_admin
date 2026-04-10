@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:get/get.dart';
+import 'package:instructor_beats_admin/core/deferred_snackbar.dart';
 import 'package:instructor_beats_admin/data/admin_data_controller.dart';
 import 'package:instructor_beats_admin/features/categories/controllers/categories_controller.dart';
 import 'package:instructor_beats_admin/features/dashboard/controllers/dashboard_controller.dart';
@@ -22,7 +23,7 @@ class AuthController extends GetxController {
     isBusy.value = true;
     try {
       if (email.trim().isEmpty || password.trim().isEmpty) {
-        Get.snackbar(
+        showAppSnackbar(
           'Almost there',
           'Please enter both your email and password.',
         );
@@ -41,7 +42,7 @@ class AuthController extends GetxController {
 
       if (!ok) {
         await _authService.signOut();
-        Get.snackbar(
+        showAppSnackbar(
           'Not authorized',
           'This email isn’t set up for the admin panel. Use an approved admin account or ask your team for access.',
         );
@@ -56,10 +57,16 @@ class AuthController extends GetxController {
       await data.refreshActivityFromFirebase();
       Get.offAllNamed(AppRoutes.admin);
     } on AuthException catch (e) {
-      Get.snackbar('Couldn’t sign in', e.message);
+      final detail = e.message.trim();
+      showAppSnackbar(
+        'Couldn’t sign in',
+        detail.isEmpty
+            ? 'Double-check your email and password, then try again.'
+            : detail,
+      );
     } catch (e) {
       log(e.toString());
-      Get.snackbar(
+      showAppSnackbar(
         'Couldn’t sign in',
         'Something went wrong. Check your connection and try again.',
       );

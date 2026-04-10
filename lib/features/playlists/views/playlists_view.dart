@@ -40,7 +40,10 @@ class PlaylistsView extends GetView<PlaylistsController> {
         '“${p.name}” was removed from your playlists.',
         kind: 'playlist_deleted',
       );
-      deferredSnackbar('Playlist deleted successfully.', '');
+      deferredSnackbar(
+        'Playlist removed',
+        'Listeners won’t see it in the app anymore.',
+      );
     }
   }
 

@@ -1,11 +1,8 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:instructor_beats_admin/core/widgets/app_text_field.dart';
-import 'package:instructor_beats_admin/core/widgets/auth_footer_divider.dart';
 import 'package:instructor_beats_admin/core/widgets/primary_button.dart';
 import 'package:instructor_beats_admin/features/auth/controllers/auth_controller.dart';
-import 'package:instructor_beats_admin/routes/app_routes.dart';
 import 'package:instructor_beats_admin/theme/app_theme.dart';
 
 /// MVC: View — admin login (dark theme aligned with admin shell).
@@ -134,16 +131,7 @@ class _LoginViewState extends State<LoginView> {
                                                 ? 'Required'
                                                 : null,
                                       ),
-                                      Align(
-                                        alignment: Alignment.centerRight,
-                                        child: TextButton(
-                                          onPressed: () => Get.toNamed<void>(
-                                            AppRoutes.forgotPassword,
-                                          ),
-                                          child: const Text('Forgot password?'),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
+                                      const SizedBox(height: 20),
                                       Obx(
                                         () => PrimaryButton(
                                           label: 'Log in',
@@ -163,40 +151,6 @@ class _LoginViewState extends State<LoginView> {
                                       ),
                                     ],
                                   ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 22),
-                            const AuthFooterDivider(),
-                            const SizedBox(height: 18),
-                            Center(
-                              child: RichText(
-                                text: TextSpan(
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.copyWith(
-                                        color: scheme.onSurfaceVariant,
-                                      ),
-                                  children: [
-                                    const TextSpan(
-                                      text: "Don't have an account? ",
-                                    ),
-                                    TextSpan(
-                                      text: 'Sign up',
-                                      style: TextStyle(
-                                        color: scheme.primary,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                      recognizer: TapGestureRecognizer()
-                                        ..onTap = () {
-                                          Get.snackbar(
-                                            'Sign-up isn’t here',
-                                            'New members join through the main Instructor Beats app. This panel is for admins only.',
-                                          );
-                                        },
-                                    ),
-                                  ],
                                 ),
                               ),
                             ),

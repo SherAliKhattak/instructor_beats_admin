@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:instructor_beats_admin/core/deferred_snackbar.dart';
 import 'package:instructor_beats_admin/data/admin_repository.dart';
 import 'package:instructor_beats_admin/services/firebase_category_service.dart';
 import 'package:instructor_beats_admin/services/firebase_song_service.dart';
@@ -34,7 +35,7 @@ class AdminDataController extends GetxController {
       final remote = await Get.find<FirebaseCategoryService>().fetchCategories();
       setCategories(remote);
     } catch (_) {
-      Get.snackbar(
+      showAppSnackbar(
         'Categories didn’t load',
         'Check your internet connection and try refreshing. If this keeps happening, contact support.',
       );
@@ -47,7 +48,7 @@ class AdminDataController extends GetxController {
       final remote = await Get.find<FirebaseSongService>().fetchSongs();
       setSongs(remote);
     } catch (_) {
-      Get.snackbar(
+      showAppSnackbar(
         'Songs didn’t load',
         'Check your internet connection and try refreshing. If this keeps happening, contact support.',
       );
@@ -60,7 +61,7 @@ class AdminDataController extends GetxController {
       final remote = await Get.find<FirebaseUserService>().fetchUsers();
       setUsers(remote);
     } catch (_) {
-      Get.snackbar(
+      showAppSnackbar(
         'Members didn’t load',
         'Check your internet connection and try refreshing. If this keeps happening, contact support.',
       );
@@ -78,7 +79,7 @@ class AdminDataController extends GetxController {
           await Get.find<FirebaseRecentActivityService>().fetchRecent();
       _replaceActivity(remote);
     } catch (_) {
-      Get.snackbar(
+      showAppSnackbar(
         'Activity didn’t load',
         'Check your internet connection and try refreshing the dashboard.',
       );

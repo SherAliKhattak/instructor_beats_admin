@@ -87,7 +87,12 @@ class UsersController extends GetxController {
             : '“${user.displayName}” can sign in again.',
         kind: 'user_status',
       );
-      deferredSnackbar('User updated successfully.', '');
+      deferredSnackbar(
+        'Member updated',
+        next.disabled
+            ? 'They can’t sign in until you enable them again.'
+            : 'They can sign in again with their usual email and password.',
+      );
     } catch (_) {
       deferredSnackbar(
         'Couldn’t update member',
@@ -108,7 +113,10 @@ class UsersController extends GetxController {
         '“${user.displayName}” now shows as “$trimmed”.',
         kind: 'user_updated',
       );
-      deferredSnackbar('User updated successfully.', '');
+      deferredSnackbar(
+        'Display name updated',
+        'They now appear as “$trimmed” in your list and the app.',
+      );
       return true;
     } catch (_) {
       deferredSnackbar(
@@ -152,7 +160,10 @@ class UsersController extends GetxController {
           'This person was removed from the list. If they can still sign in, ask your developer to finish removing their account.',
         );
       } else {
-        deferredSnackbar('User deleted successfully.', '');
+        deferredSnackbar(
+          'Member removed',
+          'They no longer appear in your list. Their sign-in was turned off when your setup allows it.',
+        );
       }
     } catch (_) {
       deferredSnackbar(
@@ -247,8 +258,8 @@ class UsersController extends GetxController {
         kind: 'user_added',
       );
       deferredSnackbar(
-        'User created successfully.',
-        'They can sign in to Instructor Beats with this email and password.',
+        'Member added',
+        'They can sign in to Instructor Beats with the email and password you set.',
       );
       return true;
     } catch (_) {

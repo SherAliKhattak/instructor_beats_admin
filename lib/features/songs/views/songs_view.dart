@@ -38,7 +38,10 @@ class SongsView extends GetView<SongsController> {
         '“${song.title}” was removed from the catalog.',
         kind: 'song_deleted',
       );
-      deferredSnackbar('Song deleted successfully.', '');
+      deferredSnackbar(
+        'Song removed',
+        'It’s no longer in your catalog.',
+      );
     }
   }
 

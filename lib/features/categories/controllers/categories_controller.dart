@@ -72,7 +72,10 @@ class CategoriesController extends GetxController {
         '“${category.name}” is ready to use when you organize songs.',
         kind: 'category_added',
       );
-      deferredSnackbar('Category added successfully.', '');
+      deferredSnackbar(
+        'Category added',
+        'You can assign songs to it from the Songs tab.',
+      );
       return true;
     } catch (_) {
       deferredSnackbar(
@@ -104,7 +107,10 @@ class CategoriesController extends GetxController {
         'Your changes to “${current.name}” were saved.',
         kind: 'category_updated',
       );
-      deferredSnackbar('Category updated successfully.', '');
+      deferredSnackbar(
+        'Category updated',
+        'The new name is saved everywhere it’s used.',
+      );
       return true;
     } catch (_) {
       deferredSnackbar(
@@ -133,7 +139,10 @@ class CategoriesController extends GetxController {
         '“$label” was removed from your categories.',
         kind: 'category_deleted',
       );
-      deferredSnackbar('Category deleted successfully.', '');
+      deferredSnackbar(
+        'Category removed',
+        'It’s no longer in your category list.',
+      );
     } catch (_) {
       deferredSnackbar(
         'Couldn’t delete category',
