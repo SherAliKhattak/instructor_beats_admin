@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:instructor_beats_admin/core/formatters.dart';
+import 'package:instructor_beats_admin/core/widgets/empty_state_message.dart';
 import 'package:instructor_beats_admin/core/widgets/pagination_controls.dart';
 import 'package:instructor_beats_admin/core/widgets/section_header.dart';
 import 'package:instructor_beats_admin/features/subscriptions/controllers/subscriptions_controller.dart';
@@ -43,6 +44,35 @@ class SubscriptionsView extends GetView<SubscriptionsController> {
                 controller.searchQuery.value;
                 controller.currentPage.value;
                 final items = controller.pageItems;
+                final listEmpty = controller.filtered.isEmpty;
+                if (listEmpty) {
+                  final noSubs = controller.data.subscriptions.isEmpty;
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: Card(
+                          clipBehavior: Clip.antiAlias,
+                          child: EmptyStateMessage(
+                            icon: Icons.subscriptions_outlined,
+                            title: noSubs
+                                ? 'No subscriptions yet'
+                                : 'No matching subscriptions',
+                            message: noSubs
+                                ? 'When customers subscribe through your app or billing, their plans will show up here for you to manage.'
+                                : 'Try a different search or clear the box to see all subscriptions.',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      PaginationControls(
+                        currentPage: controller.currentPage.value,
+                        totalItems: controller.filtered.length,
+                        itemsPerPage: controller.itemsPerPage,
+                        onPageChanged: controller.setPage,
+                      ),
+                    ],
+                  );
+                }
                 if (!wide) {
                   return Column(
                     children: [

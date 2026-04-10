@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:instructor_beats_admin/core/admin_ui_constants.dart';
 import 'package:instructor_beats_admin/core/deferred_snackbar.dart';
 import 'package:instructor_beats_admin/core/formatters.dart';
+import 'package:instructor_beats_admin/core/widgets/empty_state_message.dart';
 import 'package:instructor_beats_admin/core/widgets/pagination_controls.dart';
 import 'package:instructor_beats_admin/data/admin_data_controller.dart';
 import 'package:instructor_beats_admin/features/songs/controllers/songs_controller.dart';
@@ -235,6 +236,46 @@ class SongsView extends GetView<SongsController> {
                 controller.activeOnly.value;
                 controller.currentPage.value;
                 final items = controller.pageItems;
+                final listEmpty = controller.filtered.isEmpty;
+                if (listEmpty) {
+                  final noSongs = data.songs.isEmpty;
+                  final hasQ =
+                      controller.searchQuery.value.trim().isNotEmpty;
+                  final hasCat = controller.categoryFilterId.value != null;
+                  final activeOnly = controller.activeOnly.value;
+                  final narrowed = noSongs
+                      ? false
+                      : (hasQ || hasCat || activeOnly);
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: Card(
+                          clipBehavior: Clip.antiAlias,
+                          child: EmptyStateMessage(
+                            icon: Icons.library_music_outlined,
+                            title: noSongs
+                                ? 'No songs in your library yet'
+                                : (narrowed
+                                    ? 'No songs match'
+                                    : 'Nothing to show'),
+                            message: noSongs
+                                ? 'Tap Add song to create your first track. Add a category first if you have not already.'
+                                : (narrowed
+                                    ? 'Try a different search, set Category to All, or turn off Active only.'
+                                    : 'If you expected songs here, refresh the page or check your connection.'),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      PaginationControls(
+                        currentPage: controller.currentPage.value,
+                        totalItems: controller.filtered.length,
+                        itemsPerPage: controller.itemsPerPage,
+                        onPageChanged: (p) => controller.setPage(p),
+                      ),
+                    ],
+                  );
+                }
                 if (!wide) {
                   return Column(
                     children: [

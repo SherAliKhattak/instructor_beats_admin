@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:instructor_beats_admin/core/admin_ui_constants.dart';
 import 'package:instructor_beats_admin/core/formatters.dart';
 import 'package:instructor_beats_admin/core/widgets/app_text_field.dart';
+import 'package:instructor_beats_admin/core/widgets/empty_state_message.dart';
 import 'package:instructor_beats_admin/core/widgets/pagination_controls.dart';
 import 'package:instructor_beats_admin/core/widgets/section_header.dart';
 import 'package:instructor_beats_admin/features/categories/controllers/categories_controller.dart';
@@ -66,11 +67,23 @@ class CategoriesView extends GetView<CategoriesController> {
                 controller.searchQuery.value;
                 controller.currentPage.value;
                 final items = controller.pageItems;
+                final listEmpty = controller.filtered.isEmpty;
                 return Column(
                   children: [
                     Expanded(
                       child: Card(
-                        child: ListView.separated(
+                        clipBehavior: Clip.antiAlias,
+                        child: listEmpty
+                            ? EmptyStateMessage(
+                                icon: Icons.category_outlined,
+                                title: data.categories.isEmpty
+                                    ? 'No categories yet'
+                                    : 'No matching categories',
+                                message: data.categories.isEmpty
+                                    ? 'Use Add category to create labels for your music (for example HIIT or Yoga).'
+                                    : 'Try another search or clear the search box to see all categories.',
+                              )
+                            : ListView.separated(
                           itemCount: items.length,
                           separatorBuilder: (context, _) =>
                               const Divider(height: 1),

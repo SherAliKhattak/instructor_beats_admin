@@ -4,6 +4,7 @@ import 'package:instructor_beats_admin/core/admin_ui_constants.dart';
 import 'package:instructor_beats_admin/core/input_validation.dart';
 import 'package:instructor_beats_admin/core/formatters.dart';
 import 'package:instructor_beats_admin/core/widgets/app_text_field.dart';
+import 'package:instructor_beats_admin/core/widgets/empty_state_message.dart';
 import 'package:instructor_beats_admin/core/widgets/pagination_controls.dart';
 import 'package:instructor_beats_admin/core/widgets/section_header.dart';
 import 'package:instructor_beats_admin/features/users/controllers/users_controller.dart';
@@ -110,6 +111,35 @@ class UsersView extends GetView<UsersController> {
               controller.searchQuery.value;
               controller.currentPage.value;
               final items = controller.pageItems;
+              final listEmpty = controller.filtered.isEmpty;
+              if (listEmpty) {
+                final noUsers = controller.data.users.isEmpty;
+                return Column(
+                  children: [
+                    Expanded(
+                      child: Card(
+                        clipBehavior: Clip.antiAlias,
+                        child: EmptyStateMessage(
+                          icon: Icons.people_outline_rounded,
+                          title: noUsers
+                              ? 'No members yet'
+                              : 'No matching members',
+                          message: noUsers
+                              ? 'Tap Add user to invite someone. They will get a sign-in with the email and password you choose.'
+                              : 'Try another search or clear the search box to see everyone.',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    PaginationControls(
+                      currentPage: controller.currentPage.value,
+                      totalItems: controller.filtered.length,
+                      itemsPerPage: controller.itemsPerPage,
+                      onPageChanged: controller.setPage,
+                    ),
+                  ],
+                );
+              }
               if (!wide) {
                 return Column(
                   children: [

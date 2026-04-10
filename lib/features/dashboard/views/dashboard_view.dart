@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:instructor_beats_admin/core/formatters.dart';
+import 'package:instructor_beats_admin/core/widgets/empty_state_message.dart';
 import 'package:instructor_beats_admin/features/dashboard/controllers/dashboard_controller.dart';
 import 'package:instructor_beats_admin/models/subscription_model.dart';
 import 'package:instructor_beats_admin/theme/app_colors.dart';
@@ -159,20 +160,23 @@ class DashboardView extends GetView<DashboardController> {
                 const SizedBox(height: 12),
                 Card(
                   child: controller.filteredActivity.isEmpty
-                      ? const Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: 28,
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 24,
                             horizontal: 16,
                           ),
-                          child: Center(
-                            child: Text(
-                              'Nothing here yet. When you add or change songs, categories, members, playlists, or subscriptions, a short summary will show up here.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: DashColors.textMuted,
-                                height: 1.35,
-                              ),
-                            ),
+                          child: EmptyStateMessage(
+                            icon: Icons.history_rounded,
+                            title: data.activity.isEmpty
+                                ? 'No recent activity yet'
+                                : 'No activity matches your search',
+                            message: data.activity.isEmpty
+                                ? 'When you add or change songs, categories, members, playlists, or subscriptions, a short summary will show up here.'
+                                : 'Try different words or clear the search to see all recent items.',
+                            titleColor: DashColors.textPrimary,
+                            messageColor: DashColors.textMuted,
+                            iconColor:
+                                DashColors.textMuted.withValues(alpha: 0.45),
                           ),
                         )
                       : Column(

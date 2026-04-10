@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:instructor_beats_admin/core/deferred_snackbar.dart';
 import 'package:instructor_beats_admin/core/formatters.dart';
+import 'package:instructor_beats_admin/core/widgets/empty_state_message.dart';
 import 'package:instructor_beats_admin/core/widgets/pagination_controls.dart';
 import 'package:instructor_beats_admin/core/widgets/section_header.dart';
 import 'package:instructor_beats_admin/data/admin_data_controller.dart';
@@ -97,6 +98,35 @@ class PlaylistsView extends GetView<PlaylistsController> {
               controller.searchQuery.value;
               controller.currentPage.value;
               final items = controller.pageItems;
+              final listEmpty = controller.filtered.isEmpty;
+              if (listEmpty) {
+                final noPlaylists = controller.data.playlists.isEmpty;
+                return Column(
+                  children: [
+                    Expanded(
+                      child: Card(
+                        clipBehavior: Clip.antiAlias,
+                        child: EmptyStateMessage(
+                          icon: Icons.queue_music_rounded,
+                          title: noPlaylists
+                              ? 'No playlists yet'
+                              : 'No matching playlists',
+                          message: noPlaylists
+                              ? 'Playlists will appear here once they are added to your catalog. You can edit or remove them from this screen.'
+                              : 'Try another search or clear the box to see all playlists.',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    PaginationControls(
+                      currentPage: controller.currentPage.value,
+                      totalItems: controller.filtered.length,
+                      itemsPerPage: controller.itemsPerPage,
+                      onPageChanged: controller.setPage,
+                    ),
+                  ],
+                );
+              }
               if (!wide) {
                 return Column(
                   children: [
