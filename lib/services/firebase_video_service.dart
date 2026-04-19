@@ -161,7 +161,7 @@ class FirebaseVideoService {
         out.add(v);
       }
     }
-    out.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    out.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return out;
   }
 

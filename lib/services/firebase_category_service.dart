@@ -28,7 +28,7 @@ class FirebaseCategoryService {
         createdAt: createdAt,
       );
     }).where((c) => c.name.isNotEmpty).toList()
-      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 
   Future<void> upsertCategory(CategoryModel category) {

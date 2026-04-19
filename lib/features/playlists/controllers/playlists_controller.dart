@@ -5,10 +5,12 @@ import 'package:instructor_beats_admin/core/deferred_snackbar.dart';
 import 'package:instructor_beats_admin/data/admin_data_controller.dart';
 import 'package:instructor_beats_admin/models/playlist_model.dart';
 import 'package:instructor_beats_admin/services/firebase_playlist_service.dart';
+import 'package:instructor_beats_admin/services/firebase_song_service.dart';
 
 class PlaylistsController extends GetxController {
   final AdminDataController data = Get.find<AdminDataController>();
   final FirebasePlaylistService _service = Get.find<FirebasePlaylistService>();
+  final FirebaseSongService _songService = Get.find<FirebaseSongService>();
 
   final RxString searchQuery = ''.obs;
   final RxInt currentPage = 1.obs;
@@ -152,10 +154,41 @@ class PlaylistsController extends GetxController {
     }
   }
 
+  Future<bool> updatePlaylistSongs({
+    required PlaylistModel playlist,
+    required List<String> songIds,
+  }) async {
+    final next = playlist.copyWith(
+      songIds: List<String>.from(songIds),
+      trackCount: songIds.length,
+    );
+    try {
+      await _service.upsertPlaylist(next);
+      await _songService.syncPlaylistMembershipOnSongs(
+        playlistId: playlist.id,
+        songIdsInPlaylist: songIds.toSet(),
+      );
+      await data.refreshPlaylistsFromFirebase();
+      await data.refreshSongsFromFirebase();
+      return true;
+    } catch (_) {
+      deferredSnackbar(
+        'Couldn’t update playlist songs',
+        'Check your connection and try again.',
+      );
+      return false;
+    }
+  }
+
   Future<bool> removePlaylist(String id) async {
     try {
+      await _songService.syncPlaylistMembershipOnSongs(
+        playlistId: id,
+        songIdsInPlaylist: {},
+      );
       await _service.deletePlaylist(id);
       await data.refreshPlaylistsFromFirebase();
+      await data.refreshSongsFromFirebase();
       _clampPage();
       return true;
     } catch (_) {

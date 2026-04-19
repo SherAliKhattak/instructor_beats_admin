@@ -11,6 +11,7 @@ class PaginationControls extends StatelessWidget {
     required this.onPageChanged,
     this.activeColor,
     this.inactiveColor,
+    this.showWhenSinglePage = false,
   });
 
   final int currentPage;
@@ -19,6 +20,7 @@ class PaginationControls extends StatelessWidget {
   final ValueChanged<int> onPageChanged;
   final Color? activeColor;
   final Color? inactiveColor;
+  final bool showWhenSinglePage;
 
   int get totalPages =>
       totalItems <= 0 ? 1 : (totalItems / itemsPerPage).ceil();
@@ -31,7 +33,7 @@ class PaginationControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (totalPages <= 1) return const SizedBox.shrink();
+    if (totalPages <= 1 && !showWhenSinglePage) return const SizedBox.shrink();
     final scheme = Theme.of(context).colorScheme;
     final inactive =
         inactiveColor ?? scheme.surfaceContainerHighest;

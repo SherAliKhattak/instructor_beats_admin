@@ -52,7 +52,7 @@ class FirebaseSongService {
         out.add(song);
       }
     }
-    out.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    out.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return out;
   }
 
@@ -153,6 +153,52 @@ class FirebaseSongService {
       'created_at': Timestamp.fromDate(song.createdAt),
       'updated_at': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
+  }
+
+  /// Ensures each song document’s `playlist_ids` matches inclusion in this playlist.
+  Future<void> syncPlaylistMembershipOnSongs({
+    required String playlistId,
+    required Set<String> songIdsInPlaylist,
+  }) async {
+    final all = await fetchSongs();
+    if (all.isEmpty) return;
+
+    WriteBatch batch = _firestore.batch();
+    var pending = 0;
+
+    Future<void> flush() async {
+      if (pending > 0) {
+        await batch.commit();
+        batch = _firestore.batch();
+        pending = 0;
+      }
+    }
+
+    for (final song in all) {
+      final shouldHave = songIdsInPlaylist.contains(song.id);
+      final has = song.playlistIds.contains(playlistId);
+      if (shouldHave == has) continue;
+
+      final next = List<String>.from(song.playlistIds);
+      if (shouldHave) {
+        if (!next.contains(playlistId)) next.add(playlistId);
+      } else {
+        next.remove(playlistId);
+      }
+      next.sort();
+
+      batch.set(
+        _firestore.collection('songs').doc(song.id),
+        {
+          'playlist_ids': next,
+          'updated_at': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
+      pending++;
+      if (pending >= 450) await flush();
+    }
+    await flush();
   }
 
   Future<String> _uploadFile({

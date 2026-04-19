@@ -9,11 +9,28 @@ import 'package:instructor_beats_admin/core/widgets/section_header.dart';
 import 'package:instructor_beats_admin/data/admin_data_controller.dart';
 import 'package:instructor_beats_admin/features/playlists/controllers/playlists_controller.dart';
 import 'package:instructor_beats_admin/features/playlists/widgets/playlist_form_dialog.dart';
+import 'package:instructor_beats_admin/features/playlists/widgets/playlist_songs_dialog.dart';
 import 'package:instructor_beats_admin/models/playlist_model.dart';
 
 /// Playlists: CRUD + featured / recommended curation.
 class PlaylistsView extends GetView<PlaylistsController> {
   const PlaylistsView({super.key});
+
+  Future<void> _manageSongs(BuildContext context, PlaylistModel p) async {
+    final data = Get.find<AdminDataController>();
+    if (data.songs.isEmpty) {
+      await data.refreshSongsFromFirebase();
+      if (!context.mounted) return;
+    }
+    if (data.songs.isEmpty) {
+      deferredSnackbar(
+        'No songs yet',
+        'Add songs in the Songs section first, then come back to attach them.',
+      );
+      return;
+    }
+    await showPlaylistSongsDialog(context, playlist: p);
+  }
 
   Future<void> _confirmDelete(BuildContext context, PlaylistModel p) async {
     final ok = await showDialog<bool>(
@@ -140,6 +157,7 @@ class PlaylistsView extends GetView<PlaylistsController> {
                       currentPage: controller.currentPage.value,
                       totalItems: controller.filtered.length,
                       itemsPerPage: controller.itemsPerPage,
+                      showWhenSinglePage: true,
                       onPageChanged: controller.setPage,
                     ),
                   ],
@@ -156,6 +174,8 @@ class PlaylistsView extends GetView<PlaylistsController> {
                         itemBuilder: (context, i) => _PlaylistCard(
                           p: items[i],
                           controller: controller,
+                          hasSongs: controller.data.songs.isNotEmpty,
+                          onManageSongs: () => _manageSongs(context, items[i]),
                           onEdit: () => showPlaylistFormDialog(
                             context,
                             existing: items[i],
@@ -169,6 +189,7 @@ class PlaylistsView extends GetView<PlaylistsController> {
                       currentPage: controller.currentPage.value,
                       totalItems: controller.filtered.length,
                       itemsPerPage: controller.itemsPerPage,
+                      showWhenSinglePage: true,
                       onPageChanged: controller.setPage,
                     ),
                   ],
@@ -187,146 +208,163 @@ class PlaylistsView extends GetView<PlaylistsController> {
                                 constraints: BoxConstraints(
                                   minWidth: constraints.maxWidth,
                                 ),
-                                child: DataTable(
-                                  headingRowColor: WidgetStateProperty.all(
-                                    scheme.surfaceContainerHighest,
-                                  ),
-                                  headingTextStyle: TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 12,
-                                    letterSpacing: 0.2,
-                                    color: scheme.onSurfaceVariant,
-                                  ),
-                                  dataTextStyle: TextStyle(
-                                    fontSize: 13,
-                                    color: scheme.onSurface,
-                                  ),
-                                  columnSpacing: 24,
-                                  horizontalMargin: 18,
-                                  headingRowHeight: 52,
-                                  dataRowMinHeight: 64,
-                                  dataRowMaxHeight: 72,
-                                  dividerThickness: 0.5,
-                                  columns: const [
-                                    DataColumn(label: Text('Cover')),
-                                    DataColumn(label: Text('Playlist')),
-                                    DataColumn(label: Text('Tracks')),
-                                    DataColumn(label: Text('Featured')),
-                                    DataColumn(label: Text('Recommended')),
-                                    DataColumn(label: Text('Created')),
-                                    DataColumn(label: Text('Actions')),
-                                  ],
-                                  rows: List.generate(items.length, (i) {
-                                    final p = items[i];
-                                    return DataRow.byIndex(
-                                      index: i,
-                                      color: WidgetStateProperty.resolveWith(
-                                        (_) => i.isEven
-                                            ? Colors.transparent
-                                            : scheme.surface.withValues(
-                                                alpha: 0.2,
-                                              ),
-                                      ),
-                                      cells: [
-                                        DataCell(_CoverThumb(playlist: p)),
-                                        DataCell(
-                                          Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                p.name,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.w700,
+                                child: SingleChildScrollView(
+                                  child: DataTable(
+                                    headingRowColor: WidgetStateProperty.all(
+                                      scheme.surfaceContainerHighest,
+                                    ),
+                                    headingTextStyle: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 12,
+                                      letterSpacing: 0.2,
+                                      color: scheme.onSurfaceVariant,
+                                    ),
+                                    dataTextStyle: TextStyle(
+                                      fontSize: 13,
+                                      color: scheme.onSurface,
+                                    ),
+                                    columnSpacing: 24,
+                                    horizontalMargin: 18,
+                                    headingRowHeight: 52,
+                                    dataRowMinHeight: 64,
+                                    dataRowMaxHeight: 72,
+                                    dividerThickness: 0.5,
+                                    columns: const [
+                                      DataColumn(label: Text('Cover')),
+                                      DataColumn(label: Text('Playlist')),
+                                      DataColumn(label: Text('Tracks')),
+                                      DataColumn(label: Text('Featured')),
+                                      DataColumn(label: Text('Recommended')),
+                                      DataColumn(label: Text('Created')),
+                                      DataColumn(label: Text('Actions')),
+                                    ],
+                                    rows: List.generate(items.length, (i) {
+                                      final p = items[i];
+                                      return DataRow.byIndex(
+                                        index: i,
+                                        color: WidgetStateProperty.resolveWith(
+                                          (_) => i.isEven
+                                              ? Colors.transparent
+                                              : scheme.surface.withValues(
+                                                  alpha: 0.2,
                                                 ),
-                                              ),
-                                              if (p.description != null &&
-                                                  p.description!.isNotEmpty)
+                                        ),
+                                        cells: [
+                                          DataCell(_CoverThumb(playlist: p)),
+                                          DataCell(
+                                            Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
                                                 Text(
-                                                  p.description!,
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    color:
-                                                        scheme.onSurfaceVariant,
+                                                  p.name,
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.w700,
                                                   ),
                                                 ),
-                                            ],
-                                          ),
-                                        ),
-                                        DataCell(Text('${p.trackCount}')),
-                                        DataCell(
-                                          Switch.adaptive(
-                                            value: p.isFeatured,
-                                            activeTrackColor: scheme.primary
-                                                .withValues(alpha: 0.35),
-                                            thumbColor:
-                                                WidgetStateProperty.resolveWith(
-                                                  (states) =>
-                                                      states.contains(
-                                                        WidgetState.selected,
-                                                      )
-                                                      ? scheme.primary
-                                                      : scheme.outline,
-                                                ),
-                                            onChanged: (v) =>
-                                                controller.setFeatured(p.id, v),
-                                          ),
-                                        ),
-                                        DataCell(
-                                          Switch.adaptive(
-                                            value: p.isRecommended,
-                                            activeTrackColor: scheme.primary
-                                                .withValues(alpha: 0.35),
-                                            thumbColor:
-                                                WidgetStateProperty.resolveWith(
-                                                  (states) =>
-                                                      states.contains(
-                                                        WidgetState.selected,
-                                                      )
-                                                      ? scheme.primary
-                                                      : scheme.outline,
-                                                ),
-                                            onChanged: (v) => controller
-                                                .setRecommended(p.id, v),
-                                          ),
-                                        ),
-                                        DataCell(
-                                          Text(
-                                            adminDateFormat.format(p.createdAt),
-                                          ),
-                                        ),
-                                        DataCell(
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              _TableIcon(
-                                                tooltip: 'Edit',
-                                                icon: Icons.edit_outlined,
-                                                onPressed: () =>
-                                                    showPlaylistFormDialog(
-                                                      context,
-                                                      existing: p,
+                                                if (p.description != null &&
+                                                    p.description!.isNotEmpty)
+                                                  Text(
+                                                    p.description!,
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: scheme
+                                                          .onSurfaceVariant,
                                                     ),
-                                              ),
-                                              const SizedBox(width: 6),
-                                              _TableIcon(
-                                                tooltip: 'Delete',
-                                                icon: Icons.delete_outline,
-                                                danger: true,
-                                                onPressed: () =>
-                                                    _confirmDelete(context, p),
-                                              ),
-                                            ],
+                                                  ),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    );
-                                  }),
+                                          DataCell(Text('${p.trackCount}')),
+                                          DataCell(
+                                            Switch.adaptive(
+                                              value: p.isFeatured,
+                                              activeTrackColor: scheme.primary
+                                                  .withValues(alpha: 0.35),
+                                              thumbColor:
+                                                  WidgetStateProperty
+                                                      .resolveWith(
+                                                (states) => states.contains(
+                                                          WidgetState.selected,
+                                                        )
+                                                    ? scheme.primary
+                                                    : scheme.outline,
+                                              ),
+                                              onChanged: (v) =>
+                                                  controller.setFeatured(
+                                                p.id,
+                                                v,
+                                              ),
+                                            ),
+                                          ),
+                                          DataCell(
+                                            Switch.adaptive(
+                                              value: p.isRecommended,
+                                              activeTrackColor: scheme.primary
+                                                  .withValues(alpha: 0.35),
+                                              thumbColor:
+                                                  WidgetStateProperty
+                                                      .resolveWith(
+                                                (states) => states.contains(
+                                                          WidgetState.selected,
+                                                        )
+                                                    ? scheme.primary
+                                                    : scheme.outline,
+                                              ),
+                                              onChanged: (v) => controller
+                                                  .setRecommended(p.id, v),
+                                            ),
+                                          ),
+                                          DataCell(
+                                            Text(
+                                              adminDateFormat.format(
+                                                p.createdAt,
+                                              ),
+                                            ),
+                                          ),
+                                          DataCell(
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                _TableIcon(
+                                                  tooltip: p.trackCount == 0
+                                                      ? 'Add songs'
+                                                      : 'Update songs',
+                                                  icon: Icons
+                                                      .playlist_add_rounded,
+                                                  onPressed: () =>
+                                                      _manageSongs(context, p),
+                                                ),
+                                                const SizedBox(width: 6),
+                                                _TableIcon(
+                                                  tooltip: 'Edit',
+                                                  icon: Icons.edit_outlined,
+                                                  onPressed: () =>
+                                                      showPlaylistFormDialog(
+                                                    context,
+                                                    existing: p,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 6),
+                                                _TableIcon(
+                                                  tooltip: 'Delete',
+                                                  icon: Icons.delete_outline,
+                                                  danger: true,
+                                                  onPressed: () =>
+                                                      _confirmDelete(context, p),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }),
+                                  ),
                                 ),
                               ),
                             ),
@@ -338,6 +376,7 @@ class PlaylistsView extends GetView<PlaylistsController> {
                     currentPage: controller.currentPage.value,
                     totalItems: controller.filtered.length,
                     itemsPerPage: controller.itemsPerPage,
+                    showWhenSinglePage: true,
                     onPageChanged: controller.setPage,
                   ),
                 ],
@@ -433,12 +472,16 @@ class _PlaylistCard extends StatelessWidget {
   const _PlaylistCard({
     required this.p,
     required this.controller,
+    required this.hasSongs,
+    required this.onManageSongs,
     required this.onEdit,
     required this.onDelete,
   });
 
   final PlaylistModel p;
   final PlaylistsController controller;
+  final bool hasSongs;
+  final VoidCallback onManageSongs;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -495,6 +538,25 @@ class _PlaylistCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: hasSongs ? onManageSongs : null,
+                icon: const Icon(Icons.playlist_add_rounded),
+                label: Text(p.trackCount == 0 ? 'Add songs' : 'Update songs'),
+              ),
+            ),
+            if (!hasSongs)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  'No songs in catalog yet. Add songs first.',
+                  style: TextStyle(
+                    color: scheme.onSurfaceVariant,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
             SwitchListTile.adaptive(
               contentPadding: EdgeInsets.zero,
               title: const Text('Featured'),

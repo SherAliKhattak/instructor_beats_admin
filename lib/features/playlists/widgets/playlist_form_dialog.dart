@@ -13,17 +13,15 @@ Future<void> showPlaylistFormDialog(
   PlaylistModel? existing,
 }) async {
   final controller = Get.find<PlaylistsController>();
+  final data = Get.find<AdminDataController>();
+  final scheme = Theme.of(context).colorScheme;
   final h = AdminUi.controlHeight;
   final nameC = TextEditingController(text: existing?.name ?? '');
   final descC = TextEditingController(text: existing?.description ?? '');
   final coverC = TextEditingController(text: existing?.coverImageUrl ?? '');
-  final tracksC = TextEditingController(
-    text: existing != null ? '${existing.trackCount}' : '12',
-  );
   var featured = existing?.isFeatured ?? false;
   var recommended = existing?.isRecommended ?? false;
-
-  final scheme = Theme.of(context).colorScheme;
+  var saving = false;
 
   ButtonStyle outlineStyle() => OutlinedButton.styleFrom(
         minimumSize: Size(0, h),
@@ -55,50 +53,62 @@ Future<void> showPlaylistFormDialog(
         insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
+          constraints: BoxConstraints(
+            maxWidth: 520,
+            maxHeight: MediaQuery.sizeOf(context).height * 0.92,
+          ),
           child: StatefulBuilder(
             builder: (context, setDialogState) {
               void close() => Navigator.pop(dialogCtx);
 
               Future<void> saveAndClose() async {
+                if (saving) return;
                 final name = nameC.text.trim();
                 if (name.isEmpty) return;
-                final tracks = int.tryParse(tracksC.text.trim()) ?? 0;
-                final now = DateTime.now();
-                final cover = coverC.text.trim();
-                final desc = descC.text.trim();
 
-                final playlist = PlaylistModel(
-                  id: existing?.id ?? 'p_${now.millisecondsSinceEpoch}',
-                  name: name,
-                  description: desc.isEmpty ? null : desc,
-                  coverImageUrl: cover.isEmpty ? null : cover,
-                  trackCount: tracks.clamp(0, 9999),
-                  isFeatured: featured,
-                  isRecommended: recommended,
-                  createdAt: existing?.createdAt ?? now,
-                );
+                saving = true;
+                setDialogState(() {});
+                try {
+                  final now = DateTime.now();
+                  final cover = coverC.text.trim();
+                  final desc = descC.text.trim();
 
-                final saved = existing == null
-                    ? await controller.addPlaylist(playlist)
-                    : await controller.replacePlaylist(existing.id, playlist);
-                if (!saved) return;
+                  final playlist = PlaylistModel(
+                    id: existing?.id ?? 'p_${now.millisecondsSinceEpoch}',
+                    name: name,
+                    description: desc.isEmpty ? null : desc,
+                    coverImageUrl: cover.isEmpty ? null : cover,
+                    songIds: existing?.songIds ?? const [],
+                    trackCount: existing?.trackCount ?? 0,
+                    isFeatured: featured,
+                    isRecommended: recommended,
+                    createdAt: existing?.createdAt ?? now,
+                  );
 
-                final data = Get.find<AdminDataController>();
-                await data.recordRecentActivity(
-                  existing == null ? 'New playlist' : 'Playlist updated',
-                  existing == null
-                      ? '“$name” was added to your playlists.'
-                      : 'Your changes to “$name” were saved.',
-                  kind: existing == null ? 'playlist_added' : 'playlist_updated',
-                );
-                deferredSnackbar(
-                  existing == null ? 'Playlist saved' : 'Changes saved',
-                  existing == null
-                      ? '“$name” is in your playlist list.'
-                      : 'Updates to “$name” are saved.',
-                );
-                if (dialogCtx.mounted) close();
+                  final saved = existing == null
+                      ? await controller.addPlaylist(playlist)
+                      : await controller.replacePlaylist(existing.id, playlist);
+                  if (!saved) return;
+
+                  await data.recordRecentActivity(
+                    existing == null ? 'New playlist' : 'Playlist updated',
+                    existing == null
+                        ? '“$name” was added to your playlists.'
+                        : 'Your changes to “$name” were saved.',
+                    kind:
+                        existing == null ? 'playlist_added' : 'playlist_updated',
+                  );
+                  deferredSnackbar(
+                    existing == null ? 'Playlist saved' : 'Changes saved',
+                    existing == null
+                        ? '“$name” is in your playlist list.'
+                        : 'Updates to “$name” are saved.',
+                  );
+                  if (dialogCtx.mounted) close();
+                } finally {
+                  saving = false;
+                  if (dialogCtx.mounted) setDialogState(() {});
+                }
               }
 
               return Padding(
@@ -115,13 +125,18 @@ Future<void> showPlaylistFormDialog(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                existing == null ? 'Add playlist' : 'Edit playlist',
+                                existing == null
+                                    ? 'Add playlist'
+                                    : 'Edit playlist',
                                 style: titleStyle,
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'Track order and songs are managed separately.',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                'Choose which catalog songs appear in this playlist. Track count updates automatically.',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
                                       color: scheme.onSurfaceVariant,
                                       height: 1.35,
                                     ),
@@ -131,7 +146,7 @@ Future<void> showPlaylistFormDialog(
                         ),
                         IconButton(
                           tooltip: 'Close',
-                          onPressed: close,
+                          onPressed: saving ? null : close,
                           icon: const Icon(Icons.close_rounded),
                         ),
                       ],
@@ -139,7 +154,7 @@ Future<void> showPlaylistFormDialog(
                     SizedBox(height: AdminUi.sectionGap),
                     ConstrainedBox(
                       constraints: BoxConstraints(
-                        maxHeight: MediaQuery.sizeOf(context).height * 0.55,
+                        maxHeight: MediaQuery.sizeOf(context).height * 0.58,
                       ),
                       child: SingleChildScrollView(
                         child: Column(
@@ -166,14 +181,6 @@ Future<void> showPlaylistFormDialog(
                               controller: coverC,
                             ),
                             SizedBox(height: AdminUi.fieldGap),
-                            AuthTextField(
-                              label: 'Track count',
-                              placeholder: '0',
-                              leadingIcon: Icons.numbers_rounded,
-                              controller: tracksC,
-                              keyboardType: TextInputType.number,
-                            ),
-                            SizedBox(height: AdminUi.fieldGap),
                             Material(
                               color: scheme.surfaceContainerHighest.withValues(
                                 alpha: 0.45,
@@ -183,8 +190,11 @@ Future<void> showPlaylistFormDialog(
                                 children: [
                                   SwitchListTile.adaptive(
                                     value: featured,
-                                    onChanged: (v) =>
-                                        setDialogState(() => featured = v),
+                                    onChanged: saving
+                                        ? null
+                                        : (v) => setDialogState(
+                                              () => featured = v,
+                                            ),
                                     title: const Text('Featured'),
                                     subtitle: const Text(
                                       'Show in featured carousel',
@@ -194,8 +204,11 @@ Future<void> showPlaylistFormDialog(
                                   ),
                                   SwitchListTile.adaptive(
                                     value: recommended,
-                                    onChanged: (v) =>
-                                        setDialogState(() => recommended = v),
+                                    onChanged: saving
+                                        ? null
+                                        : (v) => setDialogState(
+                                              () => recommended = v,
+                                            ),
                                     title: const Text('Recommended'),
                                     subtitle: const Text(
                                       'Show in recommended section',
@@ -217,7 +230,7 @@ Future<void> showPlaylistFormDialog(
                           child: SizedBox(
                             height: h,
                             child: OutlinedButton(
-                              onPressed: close,
+                              onPressed: saving ? null : close,
                               style: outlineStyle(),
                               child: const Text('Cancel'),
                             ),
@@ -228,9 +241,18 @@ Future<void> showPlaylistFormDialog(
                           child: SizedBox(
                             height: h,
                             child: FilledButton(
-                              onPressed: saveAndClose,
+                              onPressed: saving ? null : saveAndClose,
                               style: filledStyle(),
-                              child: Text(existing == null ? 'Add' : 'Save'),
+                              child: saving
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : Text(existing == null ? 'Add' : 'Save'),
                             ),
                           ),
                         ),
