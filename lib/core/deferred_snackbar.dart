@@ -25,7 +25,6 @@ void showAppSnackbar(String title, String message) {
   }
 }
 
-/// Shows [showAppSnackbar] after the current frame (after dialogs/sheets close).
 void deferredSnackbar(String title, String message) {
   SchedulerBinding.instance.addPostFrameCallback((_) {
     showAppSnackbar(title, message);

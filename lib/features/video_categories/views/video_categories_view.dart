@@ -6,17 +6,17 @@ import 'package:instructor_beats_admin/core/widgets/app_text_field.dart';
 import 'package:instructor_beats_admin/core/widgets/empty_state_message.dart';
 import 'package:instructor_beats_admin/core/widgets/pagination_controls.dart';
 import 'package:instructor_beats_admin/core/widgets/section_header.dart';
-import 'package:instructor_beats_admin/features/categories/controllers/categories_controller.dart';
-import 'package:instructor_beats_admin/models/category_model.dart';
+import 'package:instructor_beats_admin/features/video_categories/controllers/video_categories_controller.dart';
+import 'package:instructor_beats_admin/models/video_category_model.dart';
 
-class CategoriesView extends GetView<CategoriesController> {
-  const CategoriesView({super.key});
+class VideoCategoriesView extends GetView<VideoCategoriesController> {
+  const VideoCategoriesView({super.key});
 
-  Future<void> _edit(BuildContext context, CategoryModel c) async {
+  Future<void> _edit(BuildContext context, VideoCategoryModel c) async {
     await showDialog<void>(
       context: context,
-      builder: (ctx) => _CategoryEditorDialog.edit(
-        categoriesController: controller,
+      builder: (ctx) => _VideoCategoryEditorDialog.edit(
+        videoCategoriesController: controller,
         category: c,
       ),
     );
@@ -25,8 +25,8 @@ class CategoriesView extends GetView<CategoriesController> {
   Future<void> _add(BuildContext context) async {
     await showDialog<void>(
       context: context,
-      builder: (ctx) => _CategoryEditorDialog.add(
-        categoriesController: controller,
+      builder: (ctx) => _VideoCategoryEditorDialog.add(
+        videoCategoriesController: controller,
       ),
     );
   }
@@ -40,7 +40,7 @@ class CategoriesView extends GetView<CategoriesController> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SectionHeader(
-            title: 'Song categories',
+            title: 'Video categories',
             trailing: FilledButton.icon(
               onPressed: () => _add(context),
               style: FilledButton.styleFrom(
@@ -49,14 +49,23 @@ class CategoriesView extends GetView<CategoriesController> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
               ),
               icon: const Icon(Icons.add_rounded),
-              label: const Text('Add song category'),
+              label: const Text('Add video category'),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Separate from song categories. Use these to group class videos, tutorials, or promos.',
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.4,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 14),
           TextField(
             decoration: const InputDecoration(
               prefixIcon: Icon(Icons.search),
-              hintText: 'Search category name',
+              hintText: 'Search video category name',
             ),
             onChanged: controller.setSearch,
           ),
@@ -75,90 +84,97 @@ class CategoriesView extends GetView<CategoriesController> {
                         clipBehavior: Clip.antiAlias,
                         child: listEmpty
                             ? EmptyStateMessage(
-                                icon: Icons.category_outlined,
-                                title: data.categories.isEmpty
-                                    ? 'No categories yet'
+                                icon: Icons.video_settings_outlined,
+                                title: data.videoCategories.isEmpty
+                                    ? 'No video categories yet'
                                     : 'No matching categories',
-                                message: data.categories.isEmpty
-                                    ? 'Use Add category to create labels for your music (for example HIIT or Yoga).'
+                                message: data.videoCategories.isEmpty
+                                    ? 'Create labels here, then assign them when you add or edit a video.'
                                     : 'Try another search or clear the search box to see all categories.',
                               )
                             : ListView.separated(
-                          itemCount: items.length,
-                          separatorBuilder: (context, _) =>
-                              const Divider(height: 1),
-                          itemBuilder: (context, i) {
-                            final c = items[i];
-                            final inUse = data.songs.any(
-                              (s) => s.categoryIds.contains(c.id),
-                            );
-                            return ListTile(
-                              title: Text(
-                                c.name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              subtitle: Text(
-                                'Added ${adminDateFormat.format(c.createdAt)}'
-                                '${inUse ? ' • In use' : ''}',
-                                style: TextStyle(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                                ),
-                              ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit_outlined),
-                                    onPressed: () => _edit(context, c),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline),
-                                    onPressed: inUse
-                                        ? null
-                                        : () async {
-                                            final ok = await showDialog<bool>(
-                                              context: context,
-                                              builder: (ctx) => AlertDialog(
-                                                title: const Text(
-                                                  'Delete category?',
-                                                ),
-                                                content: const Text(
-                                                  'Only unused categories can be deleted (no songs use this category).',
-                                                ),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(
-                                                          ctx,
-                                                          false,
+                                itemCount: items.length,
+                                separatorBuilder: (context, _) =>
+                                    const Divider(height: 1),
+                                itemBuilder: (context, i) {
+                                  final c = items[i];
+                                  final inUse = data.videos
+                                      .any((v) => v.categoryId == c.id);
+                                  return ListTile(
+                                    title: Text(
+                                      c.name,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      'Added ${adminDateFormat.format(c.createdAt)}'
+                                      '${inUse ? ' • In use' : ''}',
+                                      style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                      ),
+                                    ),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.edit_outlined),
+                                          onPressed: () => _edit(context, c),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete_outline),
+                                          onPressed: inUse
+                                              ? null
+                                              : () async {
+                                                  final ok =
+                                                      await showDialog<bool>(
+                                                    context: context,
+                                                    builder: (ctx) =>
+                                                        AlertDialog(
+                                                      title: const Text(
+                                                        'Delete category?',
+                                                      ),
+                                                      content: const Text(
+                                                        'Only categories not used by any video can be deleted.',
+                                                      ),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: () =>
+                                                              Navigator.pop(
+                                                            ctx,
+                                                            false,
+                                                          ),
+                                                          child: const Text(
+                                                            'Cancel',
+                                                          ),
                                                         ),
-                                                    child: const Text('Cancel'),
-                                                  ),
-                                                  FilledButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(
-                                                          ctx,
-                                                          true,
+                                                        FilledButton(
+                                                          onPressed: () =>
+                                                              Navigator.pop(
+                                                            ctx,
+                                                            true,
+                                                          ),
+                                                          child: const Text(
+                                                            'Delete',
+                                                          ),
                                                         ),
-                                                    child: const Text('Delete'),
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                            if (ok == true) {
-                                              controller.deleteCategory(c.id);
-                                            }
-                                          },
-                                  ),
-                                ],
+                                                      ],
+                                                    ),
+                                                  );
+                                                  if (ok == true) {
+                                                    controller
+                                                        .deleteVideoCategory(
+                                                            c.id);
+                                                  }
+                                                },
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
                               ),
-                            );
-                          },
-                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -179,7 +195,7 @@ class CategoriesView extends GetView<CategoriesController> {
   }
 }
 
-ButtonStyle _categoryDialogOutline(ColorScheme scheme, double h) =>
+ButtonStyle _videoCategoryDialogOutline(ColorScheme scheme, double h) =>
     OutlinedButton.styleFrom(
       minimumSize: Size(0, h),
       maximumSize: Size(double.infinity, h),
@@ -187,48 +203,49 @@ ButtonStyle _categoryDialogOutline(ColorScheme scheme, double h) =>
       side: BorderSide(color: scheme.outline.withValues(alpha: 0.9)),
     );
 
-ButtonStyle _categoryDialogFilled(double h) => FilledButton.styleFrom(
+ButtonStyle _videoCategoryDialogFilled(double h) => FilledButton.styleFrom(
       minimumSize: Size(0, h),
       maximumSize: Size(double.infinity, h),
       padding: const EdgeInsets.symmetric(horizontal: 16),
     );
 
-class _CategoryEditorDialog extends StatefulWidget {
-  const _CategoryEditorDialog._({
-    required this.categoriesController,
+class _VideoCategoryEditorDialog extends StatefulWidget {
+  const _VideoCategoryEditorDialog._({
+    required this.videoCategoriesController,
     required this.isEdit,
     this.category,
   });
 
-  factory _CategoryEditorDialog.add({
-    required CategoriesController categoriesController,
+  factory _VideoCategoryEditorDialog.add({
+    required VideoCategoriesController videoCategoriesController,
   }) {
-    return _CategoryEditorDialog._(
-      categoriesController: categoriesController,
+    return _VideoCategoryEditorDialog._(
+      videoCategoriesController: videoCategoriesController,
       isEdit: false,
     );
   }
 
-  factory _CategoryEditorDialog.edit({
-    required CategoriesController categoriesController,
-    required CategoryModel category,
+  factory _VideoCategoryEditorDialog.edit({
+    required VideoCategoriesController videoCategoriesController,
+    required VideoCategoryModel category,
   }) {
-    return _CategoryEditorDialog._(
-      categoriesController: categoriesController,
+    return _VideoCategoryEditorDialog._(
+      videoCategoriesController: videoCategoriesController,
       isEdit: true,
       category: category,
     );
   }
 
-  final CategoriesController categoriesController;
+  final VideoCategoriesController videoCategoriesController;
   final bool isEdit;
-  final CategoryModel? category;
+  final VideoCategoryModel? category;
 
   @override
-  State<_CategoryEditorDialog> createState() => _CategoryEditorDialogState();
+  State<_VideoCategoryEditorDialog> createState() =>
+      _VideoCategoryEditorDialogState();
 }
 
-class _CategoryEditorDialogState extends State<_CategoryEditorDialog> {
+class _VideoCategoryEditorDialogState extends State<_VideoCategoryEditorDialog> {
   late final TextEditingController _c;
   var _submitting = false;
 
@@ -251,11 +268,11 @@ class _CategoryEditorDialogState extends State<_CategoryEditorDialog> {
     setState(() => _submitting = true);
     try {
       final ok = widget.isEdit
-          ? await widget.categoriesController.updateCategory(
+          ? await widget.videoCategoriesController.updateVideoCategory(
               widget.category!.id,
               trimmed,
             )
-          : await widget.categoriesController.addCategory(trimmed);
+          : await widget.videoCategoriesController.addVideoCategory(trimmed);
       if (!mounted) return;
       if (ok) {
         Navigator.of(context).pop();
@@ -301,15 +318,15 @@ class _CategoryEditorDialogState extends State<_CategoryEditorDialog> {
                       children: [
                         Text(
                           widget.isEdit
-                              ? 'Edit song category'
-                              : 'Add song category',
+                              ? 'Edit video category'
+                              : 'Add video category',
                           style: titleStyle,
                         ),
                         const SizedBox(height: 6),
                         Text(
                           widget.isEdit
-                              ? 'Rename this category for all songs that use it.'
-                              : 'Create a label used to group songs.',
+                              ? 'Rename this category for all videos that use it.'
+                              : 'Create a label used only on the Videos tab (not songs).',
                           style:
                               Theme.of(context).textTheme.bodyMedium?.copyWith(
                                     color: scheme.onSurfaceVariant,
@@ -330,9 +347,8 @@ class _CategoryEditorDialogState extends State<_CategoryEditorDialog> {
               SizedBox(height: AdminUi.sectionGap),
               AuthTextField(
                 label: 'Category name',
-                placeholder:
-                    widget.isEdit ? 'e.g. HIIT' : 'e.g. Yoga',
-                leadingIcon: Icons.category_outlined,
+                placeholder: widget.isEdit ? 'e.g. Warm-ups' : 'e.g. Tutorials',
+                leadingIcon: Icons.video_settings_outlined,
                 controller: _c,
               ),
               SizedBox(height: AdminUi.sectionGap),
@@ -345,7 +361,7 @@ class _CategoryEditorDialogState extends State<_CategoryEditorDialog> {
                         onPressed: _submitting
                             ? null
                             : () => Navigator.of(context).pop(),
-                        style: _categoryDialogOutline(scheme, h),
+                        style: _videoCategoryDialogOutline(scheme, h),
                         child: const Text('Cancel'),
                       ),
                     ),
@@ -356,7 +372,7 @@ class _CategoryEditorDialogState extends State<_CategoryEditorDialog> {
                       height: h,
                       child: FilledButton(
                         onPressed: _submitting ? null : _save,
-                        style: _categoryDialogFilled(h),
+                        style: _videoCategoryDialogFilled(h),
                         child: _submitting
                             ? SizedBox(
                                 width: 22,

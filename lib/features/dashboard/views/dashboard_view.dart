@@ -171,7 +171,7 @@ class DashboardView extends GetView<DashboardController> {
                                 ? 'No recent activity yet'
                                 : 'No activity matches your search',
                             message: data.activity.isEmpty
-                                ? 'When you add or change songs, categories, members, playlists, or subscriptions, a short summary will show up here.'
+                                ? 'When you add or change songs, song or video categories, members, playlists, videos, or subscriptions, a short summary will show up here.'
                                 : 'Try different words or clear the search to see all recent items.',
                             titleColor: DashColors.textPrimary,
                             messageColor: DashColors.textMuted,

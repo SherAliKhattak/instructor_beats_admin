@@ -4,6 +4,7 @@ import 'package:instructor_beats_admin/core/deferred_snackbar.dart';
 import 'package:instructor_beats_admin/core/formatters.dart';
 import 'package:instructor_beats_admin/core/widgets/empty_state_message.dart';
 import 'package:instructor_beats_admin/core/widgets/pagination_controls.dart';
+import 'package:instructor_beats_admin/core/admin_ui_constants.dart';
 import 'package:instructor_beats_admin/core/widgets/section_header.dart';
 import 'package:instructor_beats_admin/data/admin_data_controller.dart';
 import 'package:instructor_beats_admin/features/playlists/controllers/playlists_controller.dart';
@@ -34,16 +35,18 @@ class PlaylistsView extends GetView<PlaylistsController> {
     );
     if (ok == true) {
       final data = Get.find<AdminDataController>();
-      controller.removePlaylist(p.id);
-      await data.recordRecentActivity(
-        'Playlist deleted',
-        '“${p.name}” was removed from your playlists.',
-        kind: 'playlist_deleted',
-      );
-      deferredSnackbar(
-        'Playlist removed',
-        'Listeners won’t see it in the app anymore.',
-      );
+      final removed = await controller.removePlaylist(p.id);
+      if (removed) {
+        await data.recordRecentActivity(
+          'Playlist deleted',
+          '“${p.name}” was removed from your playlists.',
+          kind: 'playlist_deleted',
+        );
+        deferredSnackbar(
+          'Playlist removed',
+          'Listeners won’t see it in the app anymore.',
+        );
+      }
     }
   }
 
@@ -57,7 +60,19 @@ class PlaylistsView extends GetView<PlaylistsController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SectionHeader(title: 'Playlists'),
+          SectionHeader(
+            title: 'Playlists',
+            trailing: FilledButton.icon(
+              onPressed: () => showPlaylistFormDialog(context),
+              style: FilledButton.styleFrom(
+                minimumSize: Size(0, AdminUi.controlHeight),
+                maximumSize: Size(double.infinity, AdminUi.controlHeight),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Add playlist'),
+            ),
+          ),
           const SizedBox(height: 8),
           Text(
             'Edit playlists and toggle featured or recommended. These settings are independent.',

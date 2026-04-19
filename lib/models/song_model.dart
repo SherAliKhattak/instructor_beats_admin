@@ -3,9 +3,9 @@ class SongModel {
     required this.id,
     required this.title,
     required this.artist,
-    required this.categoryId,
+    required this.categoryIds,
+    this.playlistIds = const [],
     required this.bpm,
-    required this.durationSec,
     required this.imageUrl,
     required this.audioUrl,
     required this.isActive,
@@ -15,9 +15,11 @@ class SongModel {
   final String id;
   final String title;
   final String artist;
-  final String categoryId;
+  /// One or more song category document ids.
+  final List<String> categoryIds;
+  /// Playlist document ids this track belongs to (admin-side assignment).
+  final List<String> playlistIds;
   final int bpm;
-  final int durationSec;
   final String imageUrl;
   final String audioUrl;
   final bool isActive;
@@ -27,9 +29,9 @@ class SongModel {
     String? id,
     String? title,
     String? artist,
-    String? categoryId,
+    List<String>? categoryIds,
+    List<String>? playlistIds,
     int? bpm,
-    int? durationSec,
     String? imageUrl,
     String? audioUrl,
     bool? isActive,
@@ -39,9 +41,9 @@ class SongModel {
       id: id ?? this.id,
       title: title ?? this.title,
       artist: artist ?? this.artist,
-      categoryId: categoryId ?? this.categoryId,
+      categoryIds: categoryIds ?? this.categoryIds,
+      playlistIds: playlistIds ?? this.playlistIds,
       bpm: bpm ?? this.bpm,
-      durationSec: durationSec ?? this.durationSec,
       imageUrl: imageUrl ?? this.imageUrl,
       audioUrl: audioUrl ?? this.audioUrl,
       isActive: isActive ?? this.isActive,

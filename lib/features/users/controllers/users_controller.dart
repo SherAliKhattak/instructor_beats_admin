@@ -138,7 +138,7 @@ class UsersController extends GetxController {
       deferredSnackbar(
         'Couldn’t remove member',
         'You can’t remove your own account from this screen, or the server '
-        'rejected the request. Try a different account or contact support.',
+            'rejected the request. Try a different account or contact support.',
       );
       return;
     }

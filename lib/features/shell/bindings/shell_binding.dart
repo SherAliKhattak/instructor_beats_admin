@@ -6,6 +6,8 @@ import 'package:instructor_beats_admin/features/shell/controllers/shell_controll
 import 'package:instructor_beats_admin/features/songs/controllers/songs_controller.dart';
 import 'package:instructor_beats_admin/features/subscriptions/controllers/subscriptions_controller.dart';
 import 'package:instructor_beats_admin/features/users/controllers/users_controller.dart';
+import 'package:instructor_beats_admin/features/video_categories/controllers/video_categories_controller.dart';
+import 'package:instructor_beats_admin/features/videos/controllers/videos_controller.dart';
 
 class ShellBinding extends Bindings {
   @override
@@ -14,6 +16,8 @@ class ShellBinding extends Bindings {
     Get.lazyPut(DashboardController.new, fenix: true);
     Get.lazyPut(SongsController.new, fenix: true);
     Get.lazyPut(PlaylistsController.new, fenix: true);
+    Get.lazyPut(VideosController.new, fenix: true);
+    Get.lazyPut(VideoCategoriesController.new, fenix: true);
     Get.lazyPut(CategoriesController.new, fenix: true);
     Get.lazyPut(UsersController.new, fenix: true);
     Get.lazyPut(SubscriptionsController.new, fenix: true);

@@ -3,6 +3,8 @@ import 'package:instructor_beats_admin/models/category_model.dart';
 import 'package:instructor_beats_admin/models/playlist_model.dart';
 import 'package:instructor_beats_admin/models/song_model.dart';
 import 'package:instructor_beats_admin/models/subscription_model.dart';
+import 'package:instructor_beats_admin/models/video_category_model.dart';
+import 'package:instructor_beats_admin/models/video_model.dart';
 
 class AdminRepository {
   AdminRepository() {
@@ -14,9 +16,14 @@ class AdminRepository {
   final List<AppUserModel> _users = [];
   final List<SubscriptionModel> _subscriptions = [];
   final List<PlaylistModel> _playlists = [];
+  final List<VideoModel> _videos = [];
+  final List<VideoCategoryModel> _videoCategories = [];
 
   List<CategoryModel> get categoriesSnapshot => List.unmodifiable(_categories);
   List<PlaylistModel> get playlistsSnapshot => List.unmodifiable(_playlists);
+  List<VideoModel> get videosSnapshot => List.unmodifiable(_videos);
+  List<VideoCategoryModel> get videoCategoriesSnapshot =>
+      List.unmodifiable(_videoCategories);
   List<SongModel> get songsSnapshot => List.unmodifiable(_songs);
   List<AppUserModel> get usersSnapshot => List.unmodifiable(_users);
   List<SubscriptionModel> get subscriptionsSnapshot =>
@@ -86,6 +93,12 @@ class AdminRepository {
 
   void addPlaylist(PlaylistModel p) => _playlists.add(p);
 
+  void setPlaylists(List<PlaylistModel> playlists) {
+    _playlists
+      ..clear()
+      ..addAll(playlists);
+  }
+
   void updatePlaylist(String id, PlaylistModel next) {
     final i = _playlists.indexWhere((e) => e.id == id);
     if (i >= 0) _playlists[i] = next;
@@ -109,116 +122,42 @@ class AdminRepository {
     }
   }
 
+  void setVideos(List<VideoModel> videos) {
+    _videos
+      ..clear()
+      ..addAll(videos);
+  }
+
+  void setVideoCategories(List<VideoCategoryModel> items) {
+    _videoCategories
+      ..clear()
+      ..addAll(items);
+  }
+
+  void addVideoCategory(VideoCategoryModel c) => _videoCategories.add(c);
+
+  void updateVideoCategory(String id, String name) {
+    final i = _videoCategories.indexWhere((e) => e.id == id);
+    if (i >= 0) {
+      _videoCategories[i] = _videoCategories[i].copyWith(name: name);
+    }
+  }
+
+  void deleteVideoCategory(String id) {
+    _videoCategories.removeWhere((e) => e.id == id);
+  }
+
   void _seed() {
     final now = DateTime.now();
     // Categories are sourced from Firebase; keep local seed empty.
 
     // Songs are now sourced from Firebase uploads via admin panel; keep local seed empty.
 
-    _playlists.addAll([
-      PlaylistModel(
-        id: 'p1',
-        name: 'Morning Energy',
-        description: 'High-tempo openers for early sessions',
-        coverImageUrl:
-            'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=200',
-        trackCount: 12,
-        isFeatured: true,
-        isRecommended: false,
-        createdAt: now.subtract(const Duration(days: 4)),
-      ),
-      PlaylistModel(
-        id: 'p2',
-        name: 'Recovery & Flow',
-        description: 'Low-impact cooldown and mobility',
-        coverImageUrl:
-            'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200',
-        trackCount: 18,
-        isFeatured: false,
-        isRecommended: true,
-        createdAt: now.subtract(const Duration(days: 7)),
-      ),
-      PlaylistModel(
-        id: 'p3',
-        name: 'Spin Essentials',
-        description: 'Staple tracks for cycling classes',
-        coverImageUrl:
-            'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=200',
-        trackCount: 24,
-        isFeatured: true,
-        isRecommended: true,
-        createdAt: now.subtract(const Duration(days: 1)),
-      ),
-      PlaylistModel(
-        id: 'p4',
-        name: 'HIIT Thunder',
-        description: 'Short bursts, max effort',
-        trackCount: 10,
-        isFeatured: false,
-        isRecommended: false,
-        createdAt: now.subtract(const Duration(days: 14)),
-      ),
-      PlaylistModel(
-        id: 'p5',
-        name: 'Yoga Soundscapes',
-        description: 'Ambient layers for mat work',
-        trackCount: 15,
-        isFeatured: false,
-        isRecommended: true,
-        createdAt: now.subtract(const Duration(days: 3)),
-      ),
-      PlaylistModel(
-        id: 'p6',
-        name: 'Afternoon Push',
-        description: 'Mid-day energy without burnout',
-        coverImageUrl:
-            'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=200',
-        trackCount: 14,
-        isFeatured: false,
-        isRecommended: false,
-        createdAt: now.subtract(const Duration(days: 6)),
-      ),
-      PlaylistModel(
-        id: 'p7',
-        name: 'Studio Warm-Up',
-        description: '5–10 min pre-class starters',
-        coverImageUrl:
-            'https://images.unsplash.com/photo-1599058945522-edd5a91d999b?w=200',
-        trackCount: 8,
-        isFeatured: true,
-        isRecommended: false,
-        createdAt: now.subtract(const Duration(days: 11)),
-      ),
-      PlaylistModel(
-        id: 'p8',
-        name: 'Techno Tread',
-        description: 'Industrial beats for sprints',
-        trackCount: 20,
-        isFeatured: false,
-        isRecommended: true,
-        createdAt: now.subtract(const Duration(hours: 36)),
-      ),
-      PlaylistModel(
-        id: 'p9',
-        name: 'Latin Ride',
-        description: 'Reggaeton & salsa-inspired spin set',
-        coverImageUrl:
-            'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=200',
-        trackCount: 16,
-        isFeatured: false,
-        isRecommended: false,
-        createdAt: now.subtract(const Duration(days: 20)),
-      ),
-      PlaylistModel(
-        id: 'p10',
-        name: 'Deep Focus Stretch',
-        description: 'Long holds, minimal percussion',
-        trackCount: 11,
-        isFeatured: false,
-        isRecommended: true,
-        createdAt: now.subtract(const Duration(days: 2)),
-      ),
-    ]);
+    // Playlists are loaded from Firestore `playlists` after login.
+
+    // Videos are loaded from Firestore `videos` after login.
+
+    // Video categories are loaded from Firestore `video_categories` after login.
 
     // Users are loaded from Firestore `users` collection after login.
 

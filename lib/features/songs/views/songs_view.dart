@@ -71,12 +71,13 @@ class SongsView extends GetView<SongsController> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                SizedBox(
-                  width: 200,
+                Flexible(
+                  flex: 1,
                   child: SizedBox(
                     height: controlHeight,
                     child: Obx(
                       () => DropdownButtonFormField<String?>(
+                        isExpanded: true,
                         // ignore: deprecated_member_use
                         value: controller.categoryFilterId.value,
                         decoration: _songsFilterDecoration(
@@ -87,10 +88,21 @@ class SongsView extends GetView<SongsController> {
                         items: [
                           const DropdownMenuItem<String?>(
                             value: null,
-                            child: Text('All'),
+                            child: Text(
+                              'All',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                           for (final c in data.categories)
-                            DropdownMenuItem(value: c.id, child: Text(c.name)),
+                            DropdownMenuItem<String?>(
+                              value: c.id,
+                              child: Text(
+                                c.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                         ],
                         onChanged: controller.setCategoryFilter,
                       ),
@@ -159,8 +171,10 @@ class SongsView extends GetView<SongsController> {
                 SizedBox(height: AdminUi.fieldGap),
                 SizedBox(
                   height: controlHeight,
+                  width: double.infinity,
                   child: Obx(
                     () => DropdownButtonFormField<String?>(
+                      isExpanded: true,
                       // ignore: deprecated_member_use
                       value: controller.categoryFilterId.value,
                       decoration: _songsFilterDecoration(
@@ -171,10 +185,21 @@ class SongsView extends GetView<SongsController> {
                       items: [
                         const DropdownMenuItem<String?>(
                           value: null,
-                          child: Text('All'),
+                          child: Text(
+                            'All',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                         for (final c in data.categories)
-                          DropdownMenuItem(value: c.id, child: Text(c.name)),
+                          DropdownMenuItem<String?>(
+                            value: c.id,
+                            child: Text(
+                              c.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                       ],
                       onChanged: controller.setCategoryFilter,
                     ),
@@ -293,7 +318,12 @@ class SongsView extends GetView<SongsController> {
                             final s = items[i];
                             return _SongCard(
                               song: s,
-                              categoryName: data.categoryName(s.categoryId),
+                              categoriesLabel: data.categoryNamesLabel(
+                                s.categoryIds,
+                              ),
+                              playlistsLabel: data.playlistNamesLabel(
+                                s.playlistIds,
+                              ),
                               onEdit: () => showSongFormSheet(context, existing: s),
                               onDelete: () => _confirmDelete(context, s),
                             );
@@ -347,9 +377,9 @@ class SongsView extends GetView<SongsController> {
                               columns: const [
                                 DataColumn(label: Text('Image')),
                                 DataColumn(label: Text('Title')),
-                                DataColumn(label: Text('Category')),
+                                DataColumn(label: Text('Categories')),
+                                DataColumn(label: Text('Playlists')),
                                 DataColumn(label: Text('BPM')),
-                                DataColumn(label: Text('Duration')),
                                 DataColumn(label: Text('Active')),
                                 DataColumn(label: Text('Created')),
                                 DataColumn(label: Text('Actions')),
@@ -403,9 +433,35 @@ class SongsView extends GetView<SongsController> {
                                           ],
                                         ),
                                       ),
-                                      DataCell(Text(data.categoryName(s.categoryId))),
+                                      DataCell(
+                                        ConstrainedBox(
+                                          constraints: const BoxConstraints(
+                                            maxWidth: 200,
+                                          ),
+                                          child: Text(
+                                            data.categoryNamesLabel(
+                                              s.categoryIds,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        ConstrainedBox(
+                                          constraints: const BoxConstraints(
+                                            maxWidth: 180,
+                                          ),
+                                          child: Text(
+                                            data.playlistNamesLabel(
+                                              s.playlistIds,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ),
                                       DataCell(Text('${s.bpm}')),
-                                      DataCell(Text(formatDurationMmSs(s.durationSec))),
                                       DataCell(
                                         _SongStatusBadge(
                                           active: s.isActive,
@@ -519,13 +575,15 @@ class _SongsSearchField extends StatelessWidget {
 class _SongCard extends StatelessWidget {
   const _SongCard({
     required this.song,
-    required this.categoryName,
+    required this.categoriesLabel,
+    required this.playlistsLabel,
     required this.onEdit,
     required this.onDelete,
   });
 
   final SongModel song;
-  final String categoryName;
+  final String categoriesLabel;
+  final String playlistsLabel;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -576,9 +634,10 @@ class _SongCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                Chip(label: Text(categoryName)),
+                Chip(label: Text(categoriesLabel)),
+                if (playlistsLabel != '—')
+                  Chip(label: Text('Lists: $playlistsLabel')),
                 Chip(label: Text('${song.bpm} BPM')),
-                Chip(label: Text(formatDurationMmSs(song.durationSec))),
                 Chip(
                   label: Text(song.isActive ? 'Active' : 'Inactive'),
                   visualDensity: VisualDensity.compact,

@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:instructor_beats_admin/features/auth/controllers/auth_controller.dart';
 import 'package:instructor_beats_admin/features/categories/views/categories_view.dart';
 import 'package:instructor_beats_admin/features/playlists/views/playlists_view.dart';
+import 'package:instructor_beats_admin/features/video_categories/views/video_categories_view.dart';
+import 'package:instructor_beats_admin/features/videos/views/videos_view.dart';
 import 'package:instructor_beats_admin/features/dashboard/views/dashboard_view.dart';
 import 'package:instructor_beats_admin/features/shell/controllers/shell_controller.dart';
 import 'package:instructor_beats_admin/features/shell/shell_section.dart';
@@ -119,6 +121,10 @@ class AdminShellView extends GetView<ShellController> {
                                   return const SongsView();
                                 case AdminShellSection.playlists:
                                   return const PlaylistsView();
+                                case AdminShellSection.videos:
+                                  return const VideosView();
+                                case AdminShellSection.videoCategories:
+                                  return const VideoCategoriesView();
                                 case AdminShellSection.categories:
                                   return const CategoriesView();
                                 case AdminShellSection.users:

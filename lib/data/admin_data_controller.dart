@@ -4,6 +4,7 @@ import 'package:instructor_beats_admin/data/admin_repository.dart';
 import 'package:instructor_beats_admin/services/firebase_category_service.dart';
 import 'package:instructor_beats_admin/services/firebase_song_service.dart';
 import 'package:instructor_beats_admin/services/firebase_user_service.dart';
+import 'package:instructor_beats_admin/services/firebase_playlist_service.dart';
 import 'package:instructor_beats_admin/services/firebase_recent_activity_service.dart';
 import 'package:instructor_beats_admin/models/activity_item_model.dart';
 import 'package:instructor_beats_admin/models/app_user_model.dart';
@@ -11,6 +12,10 @@ import 'package:instructor_beats_admin/models/category_model.dart';
 import 'package:instructor_beats_admin/models/playlist_model.dart';
 import 'package:instructor_beats_admin/models/song_model.dart';
 import 'package:instructor_beats_admin/models/subscription_model.dart';
+import 'package:instructor_beats_admin/models/video_category_model.dart';
+import 'package:instructor_beats_admin/models/video_model.dart';
+import 'package:instructor_beats_admin/services/firebase_video_category_service.dart';
+import 'package:instructor_beats_admin/services/firebase_video_service.dart';
 
 /// MVC: Controller — exposes reactive copies of repository data for views.
 class AdminDataController extends GetxController {
@@ -22,6 +27,8 @@ class AdminDataController extends GetxController {
   final RxList<SubscriptionModel> subscriptions = <SubscriptionModel>[].obs;
   final RxList<ActivityItemModel> activity = <ActivityItemModel>[].obs;
   final RxList<PlaylistModel> playlists = <PlaylistModel>[].obs;
+  final RxList<VideoModel> videos = <VideoModel>[].obs;
+  final RxList<VideoCategoryModel> videoCategories = <VideoCategoryModel>[].obs;
 
   @override
   void onInit() {
@@ -63,6 +70,46 @@ class AdminDataController extends GetxController {
     } catch (_) {
       showAppSnackbar(
         'Members didn’t load',
+        'Check your internet connection and try refreshing. If this keeps happening, contact support.',
+      );
+    }
+  }
+
+  /// Replaces in-memory playlists with the `playlists` collection in Firestore.
+  Future<void> refreshPlaylistsFromFirebase() async {
+    try {
+      final remote = await Get.find<FirebasePlaylistService>().fetchPlaylists();
+      setPlaylists(remote);
+    } catch (_) {
+      showAppSnackbar(
+        'Playlists didn’t load',
+        'Check your internet connection and try refreshing. If this keeps happening, contact support.',
+      );
+    }
+  }
+
+  /// Replaces in-memory videos with the `videos` collection in Firestore.
+  Future<void> refreshVideosFromFirebase() async {
+    try {
+      final remote = await Get.find<FirebaseVideoService>().fetchVideos();
+      setVideos(remote);
+    } catch (_) {
+      showAppSnackbar(
+        'Videos didn’t load',
+        'Check your internet connection and try refreshing. If this keeps happening, contact support.',
+      );
+    }
+  }
+
+  /// Replaces in-memory video categories with `video_categories` in Firestore.
+  Future<void> refreshVideoCategoriesFromFirebase() async {
+    try {
+      final remote =
+          await Get.find<FirebaseVideoCategoryService>().fetchVideoCategories();
+      setVideoCategories(remote);
+    } catch (_) {
+      showAppSnackbar(
+        'Video categories didn’t load',
         'Check your internet connection and try refreshing. If this keeps happening, contact support.',
       );
     }
@@ -110,6 +157,38 @@ class AdminDataController extends GetxController {
     users.assignAll(_repo.usersSnapshot);
     subscriptions.assignAll(_repo.subscriptionsSnapshot);
     playlists.assignAll(_repo.playlistsSnapshot);
+    videos.assignAll(_repo.videosSnapshot);
+    videoCategories.assignAll(_repo.videoCategoriesSnapshot);
+  }
+
+  void setVideoCategories(List<VideoCategoryModel> items) {
+    _repo.setVideoCategories(items);
+    refreshAll();
+  }
+
+  void addVideoCategory(VideoCategoryModel c) {
+    _repo.addVideoCategory(c);
+    refreshAll();
+  }
+
+  void updateVideoCategory(String id, String name) {
+    _repo.updateVideoCategory(id, name);
+    refreshAll();
+  }
+
+  void deleteVideoCategory(String id) {
+    _repo.deleteVideoCategory(id);
+    refreshAll();
+  }
+
+  void setVideos(List<VideoModel> items) {
+    _repo.setVideos(items);
+    refreshAll();
+  }
+
+  void setPlaylists(List<PlaylistModel> playlists) {
+    _repo.setPlaylists(playlists);
+    refreshAll();
   }
 
   void addPlaylist(PlaylistModel p) {
@@ -140,6 +219,36 @@ class AdminDataController extends GetxController {
   String categoryName(String id) {
     try {
       return categories.firstWhere((e) => e.id == id).name;
+    } catch (_) {
+      return '—';
+    }
+  }
+
+  /// Comma-separated category names for table cells and chips.
+  String categoryNamesLabel(List<String> ids) {
+    if (ids.isEmpty) return '—';
+    final names = ids.map(categoryName).where((n) => n != '—').toList();
+    return names.isEmpty ? '—' : names.join(', ');
+  }
+
+  String playlistName(String id) {
+    try {
+      return playlists.firstWhere((e) => e.id == id).name;
+    } catch (_) {
+      return '—';
+    }
+  }
+
+  String playlistNamesLabel(List<String> ids) {
+    if (ids.isEmpty) return '—';
+    final names = ids.map(playlistName).where((n) => n != '—').toList();
+    return names.isEmpty ? '—' : names.join(', ');
+  }
+
+  String videoCategoryName(String? id) {
+    if (id == null || id.isEmpty) return '—';
+    try {
+      return videoCategories.firstWhere((e) => e.id == id).name;
     } catch (_) {
       return '—';
     }

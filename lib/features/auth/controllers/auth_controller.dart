@@ -10,8 +10,11 @@ import 'package:instructor_beats_admin/data/admin_data_controller.dart';
 import 'package:instructor_beats_admin/features/categories/controllers/categories_controller.dart';
 import 'package:instructor_beats_admin/features/dashboard/controllers/dashboard_controller.dart';
 import 'package:instructor_beats_admin/features/shell/controllers/shell_controller.dart';
+import 'package:instructor_beats_admin/features/playlists/controllers/playlists_controller.dart';
 import 'package:instructor_beats_admin/features/songs/controllers/songs_controller.dart';
 import 'package:instructor_beats_admin/features/subscriptions/controllers/subscriptions_controller.dart';
+import 'package:instructor_beats_admin/features/video_categories/controllers/video_categories_controller.dart';
+import 'package:instructor_beats_admin/features/videos/controllers/videos_controller.dart';
 import 'package:instructor_beats_admin/features/users/controllers/users_controller.dart';
 import 'package:instructor_beats_admin/routes/app_routes.dart';
 import 'package:instructor_beats_admin/services/auth_service.dart';
@@ -101,6 +104,9 @@ class AuthController extends GetxController {
       data.refreshCategoriesFromFirebase(),
       data.refreshSongsFromFirebase(),
       data.refreshUsersFromFirebase(),
+      data.refreshPlaylistsFromFirebase(),
+      data.refreshVideosFromFirebase(),
+      data.refreshVideoCategoriesFromFirebase(),
       data.refreshActivityFromFirebase(),
     ]);
   }
@@ -185,6 +191,15 @@ class AuthController extends GetxController {
     }
     if (Get.isRegistered<SubscriptionsController>()) {
       Get.delete<SubscriptionsController>(force: true);
+    }
+    if (Get.isRegistered<PlaylistsController>()) {
+      Get.delete<PlaylistsController>(force: true);
+    }
+    if (Get.isRegistered<VideosController>()) {
+      Get.delete<VideosController>(force: true);
+    }
+    if (Get.isRegistered<VideoCategoriesController>()) {
+      Get.delete<VideoCategoriesController>(force: true);
     }
   }
 }

@@ -35,7 +35,7 @@ class SongsController extends GetxController {
     }
     final cat = categoryFilterId.value;
     if (cat != null && cat.isNotEmpty) {
-      list = list.where((s) => s.categoryId == cat).toList();
+      list = list.where((s) => s.categoryIds.contains(cat)).toList();
     }
     if (activeOnly.value) {
       list = list.where((s) => s.isActive).toList();

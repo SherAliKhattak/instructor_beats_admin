@@ -79,11 +79,11 @@ Future<void> showPlaylistFormDialog(
                   createdAt: existing?.createdAt ?? now,
                 );
 
-                if (existing == null) {
-                  controller.addPlaylist(playlist);
-                } else {
-                  controller.replacePlaylist(existing.id, playlist);
-                }
+                final saved = existing == null
+                    ? await controller.addPlaylist(playlist)
+                    : await controller.replacePlaylist(existing.id, playlist);
+                if (!saved) return;
+
                 final data = Get.find<AdminDataController>();
                 await data.recordRecentActivity(
                   existing == null ? 'New playlist' : 'Playlist updated',

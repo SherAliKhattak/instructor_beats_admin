@@ -70,14 +70,20 @@ class FirebaseSongService {
     if (title.isEmpty && artist.isEmpty) {
       return null;
     }
-    final categoryId = (m['category_id'] as String?)?.trim() ??
+    final categoryIds = _stringListFromFirestore(
+      m['category_ids'] ?? m['categoryIds'],
+    );
+    final legacyCategory = (m['category_id'] as String?)?.trim() ??
         (m['categoryId'] as String?)?.trim() ??
         '';
-    final bpm = _asInt(m['bpm'], 120);
-    final durationSec = _asInt(
-      m['duration_sec'] ?? m['durationSec'],
-      180,
+    final mergedCategories = categoryIds.isNotEmpty
+        ? categoryIds
+        : (legacyCategory.isNotEmpty ? [legacyCategory] : <String>[]);
+
+    final playlistIds = _stringListFromFirestore(
+      m['playlist_ids'] ?? m['playlistIds'],
     );
+    final bpm = _asInt(m['bpm'], 120);
     final imageUrl = (m['image_url'] as String?)?.trim() ??
         (m['imageUrl'] as String?)?.trim() ??
         '';
@@ -98,14 +104,26 @@ class FirebaseSongService {
       id: songId,
       title: title.isEmpty ? 'Untitled' : title,
       artist: artist.isEmpty ? 'Unknown' : artist,
-      categoryId: categoryId,
+      categoryIds: mergedCategories,
+      playlistIds: playlistIds,
       bpm: bpm <= 0 ? 120 : bpm,
-      durationSec: durationSec < 0 ? 0 : durationSec,
       imageUrl: imageUrl,
       audioUrl: audioUrl,
       isActive: active,
       createdAt: createdAt,
     );
+  }
+
+  List<String> _stringListFromFirestore(dynamic raw) {
+    if (raw is! List) return [];
+    final out = <String>[];
+    for (final e in raw) {
+      final s = e?.toString().trim();
+      if (s != null && s.isNotEmpty) {
+        out.add(s);
+      }
+    }
+    return out;
   }
 
   int _asInt(dynamic v, int fallback) {
@@ -119,13 +137,16 @@ class FirebaseSongService {
   }
 
   Future<void> upsertSong(SongModel song) {
+    final cats = song.categoryIds;
     return _firestore.collection('songs').doc(song.id).set({
       'id': song.id,
       'title': song.title,
       'artist': song.artist,
-      'category_id': song.categoryId,
+      'category_ids': cats,
+      'category_id': cats.isNotEmpty ? cats.first : '',
+      'playlist_ids': song.playlistIds,
       'bpm': song.bpm,
-      'duration_sec': song.durationSec,
+      'duration_sec': FieldValue.delete(),
       'image_url': song.imageUrl,
       'audio_url': song.audioUrl,
       'is_active': song.isActive,
